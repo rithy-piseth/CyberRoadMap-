@@ -37,7 +37,7 @@ Respond ONLY in this exact JSON format with no extra text:
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
-      model: 'llama3-8b-8192',
+      model: 'llama-3.3-70b-versatile',
       temperature: 0.5,
     });
 
@@ -54,7 +54,9 @@ Respond ONLY in this exact JSON format with no extra text:
 
     res.json({ success: true, result });
   } catch (err) {
-    console.error('Groq error:', err);
-    res.status(500).json({ message: 'AI analysis failed' });
-  }
+  console.error('Groq full error:', JSON.stringify(err, null, 2))
+  console.error('Groq message:', err.message)
+  res.status(500).json({ message: 'AI analysis failed', error: err.message })
+}
+
 };

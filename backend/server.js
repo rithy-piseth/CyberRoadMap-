@@ -11,8 +11,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/assessment', require('./routes/assessment'));
-app.use('/api/specialists', require('./routes/specialist'));
+app.use('/api/assessment', require('./routes/assessment'))
+app.use('/api/specialists', require('./routes/specialist'))
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/career', require('./routes/career'));
