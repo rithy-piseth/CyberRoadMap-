@@ -19,11 +19,18 @@ export default function Login() {
     try {
       const res = await API.post('/api/auth/login', form)
       const { token, userId, username, role } = res.data
-      localStorage.setItem('token', token)
-      localStorage.setItem('userId', userId)
-      localStorage.setItem('username', username)
-      localStorage.setItem('role', role)
-      navigate('/career-select')
+localStorage.setItem('token', token)
+localStorage.setItem('userId', userId)
+localStorage.setItem('username', username)
+localStorage.setItem('role', role)
+
+// Admin → admin page
+// Regular user → dashboard (they already have an account)
+if (role === 'admin') {
+  navigate('/admin')
+} else {
+  navigate('/dashboard')
+}
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed')
     } finally {

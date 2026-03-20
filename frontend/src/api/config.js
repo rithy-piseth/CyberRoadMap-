@@ -1,10 +1,19 @@
 import axios from 'axios';
 
+// Use current hostname so it works for both localhost and LAN access
+const getBaseURL = () => {
+  const hostname = window.location.hostname
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000'
+  }
+  // When accessed via LAN IP, point to same IP but port 3000
+  return `http://${hostname}:3000`
+}
+
 const API = axios.create({
-  baseURL: 'http://172.20.10.7:3000',  // ← your actual local IP
+  baseURL: getBaseURL(),
 });
 
-// Auto attach JWT token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;

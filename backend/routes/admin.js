@@ -1,11 +1,34 @@
-const express = require('express');
-const router = express.Router();
-const { getAllResources, addResource, updateResource, deleteResource } = require('../controllers/adminController');
-const verifyToken = require('../middleware/auth');
-const adminOnly = require('../middleware/adminOnly');
-router.use(verifyToken, adminOnly);
-router.get('/resources', getAllResources);
-router.post('/resources', addResource);
-router.put('/resources/:id', updateResource);
-router.delete('/resources/:id', deleteResource);
-module.exports = router;
+const express = require('express')
+const router = express.Router()
+const {
+  getAllResources, addResource, updateResource, deleteResource,
+  getAllUsers, getStats, addSpecialist,
+  getQuestions, addQuestion, updateQuestion, deleteQuestion
+} = require('../controllers/adminController')
+const verifyToken = require('../middleware/auth')
+const adminOnly = require('../middleware/adminOnly')
+
+router.use(verifyToken, adminOnly)
+
+// Resources
+router.get('/resources', getAllResources)
+router.post('/resources', addResource)
+router.put('/resources/:id', updateResource)
+router.delete('/resources/:id', deleteResource)
+
+// Users
+router.get('/users', getAllUsers)
+
+// Stats
+router.get('/stats', getStats)
+
+// Specialists
+router.post('/specialists', addSpecialist)
+
+// Questions
+router.get('/questions', getQuestions)
+router.post('/questions', addQuestion)
+router.put('/questions/:id', updateQuestion)
+router.delete('/questions/:id', deleteQuestion)
+
+module.exports = router

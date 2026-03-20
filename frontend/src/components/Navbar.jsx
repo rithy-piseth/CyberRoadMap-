@@ -88,22 +88,18 @@ export default function Navbar({ activePage = 'home' }) {
         </div>
 
         {/* Show different nav based on login status */}
-{!token ? (
-  <div className="nav-center-pill" style={{ display:'flex', alignItems:'center', gap:'0.3rem', background:t.tealDim, border:`1px solid ${t.tealBorder}`, borderRadius:50, padding:'0.4rem 0.8rem', transition:'all 0.3s' }}>
-    <span style={{ color:`${t.tealMid}`, fontSize:'1rem', padding:'0 0.3rem' }}>☰</span>
-    <button className={`nav-link-item ${activePage==='home'?'active':''}`} onClick={() => navigate('/')}>Home</button>
-    <div style={{ width:1, height:16, background:t.tealBorder }} />
-    <button className={`nav-link-item ${activePage==='assessment'?'active':''}`} onClick={() => navigate('/assessment')}>Find Suitable Path</button>
-  </div>
-) : (
+{token && (
   <div className="nav-center-pill" style={{ display:'flex', alignItems:'center', gap:'0.3rem', background:t.tealDim, border:`1px solid ${t.tealBorder}`, borderRadius:50, padding:'0.4rem 0.8rem', transition:'all 0.3s' }}>
     <span style={{ color:`${t.tealMid}`, fontSize:'1rem', padding:'0 0.3rem' }}>☰</span>
     <button className={`nav-link-item ${activePage==='dashboard'?'active':''}`} onClick={() => navigate('/dashboard')}>Dashboard</button>
     <div style={{ width:1, height:16, background:t.tealBorder }} />
     <button className={`nav-link-item ${activePage==='profile'?'active':''}`} onClick={() => navigate('/profile')}>Profile</button>
+    {localStorage.getItem('role') === 'admin' && <>
+      <div style={{ width:1, height:16, background:t.tealBorder }} />
+      <button className={`nav-link-item ${activePage==='admin'?'active':''}`} onClick={() => navigate('/admin')} style={{ color: activePage==='admin' ? t.teal : '#f6ad55' }}>⚙️ Admin</button>
+    </>}
   </div>
 )}
-
         {/* Right side */}
         <div style={{ display:'flex', alignItems:'center', gap:'0.8rem' }}>
           {/* Theme toggle */}
