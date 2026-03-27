@@ -101,6 +101,98 @@ exports.addSpecialist = (req, res) => {
   )
 }
 
+// ── ADD THESE TO YOUR EXISTING adminController.js ──
+
+// ── PROJECTS ──────────────────────────────────────
+
+exports.getAllProjects = (req, res) => {
+  db.query(`
+    SELECT p.*, l.name as level_name, s.name as specialist_name
+    FROM projects p
+    JOIN levels l ON l.id = p.level_id
+    JOIN specialists s ON s.id = l.specialist_id
+    ORDER BY s.name, l.order_index
+  `, (err, results) => {
+    if (err) return res.status(500).json({ message: 'DB error' })
+    res.json({ success: true, data: results })
+  })
+}
+
+exports.addProject = (req, res) => {
+  const { level_id, title, description } = req.body
+  if (!level_id || !title) return res.status(400).json({ message: 'level_id and title required' })
+  db.query('INSERT INTO projects (level_id, title, description) VALUES (?, ?, ?)',
+    [level_id, title, description || ''],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'Failed to add project' })
+      res.json({ success: true, id: result.insertId })
+    })
+}
+
+exports.updateProject = (req, res) => {
+  const { id } = req.params
+  const { title, description } = req.body
+  db.query('UPDATE projects SET title=?, description=? WHERE id=?',
+    [title, description, id],
+    (err) => {
+      if (err) return res.status(500).json({ message: 'Failed to update' })
+      res.json({ success: true })
+    })
+}
+
+exports.deleteProject = (req, res) => {
+  const { id } = req.params
+  db.query('DELETE FROM projects WHERE id=?', [id], (err) => {
+    if (err) return res.status(500).json({ message: 'Failed to delete' })
+    res.json({ success: true })
+  })
+}
+
+// ── CERTIFICATES ───────────────────────────────────
+
+exports.getAllCertificates = (req, res) => {
+  db.query(`
+    SELECT c.*, l.name as level_name, s.name as specialist_name
+    FROM certificates c
+    JOIN levels l ON l.id = c.level_id
+    JOIN specialists s ON s.id = l.specialist_id
+    ORDER BY s.name, l.order_index
+  `, (err, results) => {
+    if (err) return res.status(500).json({ message: 'DB error' })
+    res.json({ success: true, data: results })
+  })
+}
+
+exports.addCertificate = (req, res) => {
+  const { level_id, name, provider, url } = req.body
+  if (!level_id || !name) return res.status(400).json({ message: 'level_id and name required' })
+  db.query('INSERT INTO certificates (level_id, name, provider, url) VALUES (?, ?, ?, ?)',
+    [level_id, name, provider || '', url || ''],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: 'Failed to add certificate' })
+      res.json({ success: true, id: result.insertId })
+    })
+}
+
+exports.updateCertificate = (req, res) => {
+  const { id } = req.params
+  const { name, provider, url } = req.body
+  db.query('UPDATE certificates SET name=?, provider=?, url=? WHERE id=?',
+    [name, provider, url, id],
+    (err) => {
+      if (err) return res.status(500).json({ message: 'Failed to update' })
+      res.json({ success: true })
+    })
+}
+
+exports.deleteCertificate = (req, res) => {
+  const { id } = req.params
+  db.query('DELETE FROM certificates WHERE id=?', [id], (err) => {
+    if (err) return res.status(500).json({ message: 'Failed to delete' })
+    res.json({ success: true })
+  })
+}
+
 // Get questions
 exports.getQuestions = (req, res) => {
   db.query('SELECT * FROM questions ORDER BY order_index', (err, results) => {
