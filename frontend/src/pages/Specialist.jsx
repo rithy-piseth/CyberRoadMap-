@@ -16,6 +16,11 @@ export default function Specialist() {
   const [loading, setLoading] = useState(true)
   const [particles, setParticles] = useState([])
   const [loaded, setLoaded] = useState(false)
+  const [expandedProjects, setExpandedProjects] = useState({})
+
+  const toggleProject = (index) => {
+    setExpandedProjects(prev => ({ ...prev, [index]: !prev[index] }))
+  }
 
   useEffect(() => {
     const p = Array.from({ length: 12 }, (_, i) => ({
@@ -31,7 +36,6 @@ export default function Specialist() {
         setLoading(false)
         setTimeout(() => setLoaded(true), 100)
 
-        // Load content for first level
         if (res.data.levels.length > 0) {
           loadLevelContent(res.data.levels[0].id)
         }
@@ -53,6 +57,7 @@ export default function Specialist() {
 
   const handleLevelChange = (index) => {
     setActiveLevel(index)
+    setExpandedProjects({}) // reset expanded state on level change
     loadLevelContent(levels[index].id)
   }
 
@@ -67,15 +72,65 @@ export default function Specialist() {
   const levelColors = ['#64ffda', '#4fc3f7', '#f093fb', '#f5576c']
   const levelIcons = ['🌱', '⚡', '🔥', '👑']
 
+  // Parse description into lines
+  const parseDesc = (text) => {
+    if (!text) return []
+    return text.split('\n').map(line => line.trim()).filter(Boolean)
+  }
+
+  const isHeader = (line) => line.startsWith('**') && line.endsWith('**')
+  const stripBold = (line) => line.replace(/\*\*/g, '')
+  const isNumbered = (line) => /^\d+\./.test(line)
+
   return (
     <div style={{ minHeight: '100vh', background: t.bg, color: t.text, fontFamily: "'Rajdhani', sans-serif", overflowX: 'hidden', position: 'relative', transition: 'all 0.3s' }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600&display=swap');
         * { margin:0; padding:0; box-sizing:border-box; }
+
         @keyframes floatUp { 0%,100%{transform:translateY(0) rotate(0deg);opacity:0.4} 50%{transform:translateY(-25px) rotate(180deg);opacity:0.7} }
         @keyframes fadeSlideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
         @keyframes glowPulse { 0%,100%{box-shadow:0 0 15px ${t.tealDim}} 50%{box-shadow:0 0 35px ${t.tealMid}} }
+
+        @keyframes slideDown {
+          from { opacity: 0; max-height: 0; transform: translateY(-6px); }
+          to   { opacity: 1; max-height: 800px; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+          from { opacity: 1; max-height: 800px; transform: translateY(0); }
+          to   { opacity: 0; max-height: 0; transform: translateY(-6px); }
+        }
+
+        .desc-open {
+          animation: slideDown 0.35s ease forwards;
+          overflow: hidden;
+        }
+        .desc-close {
+          animation: slideUp 0.25s ease forwards;
+          overflow: hidden;
+          pointer-events: none;
+        }
+
+        .proj-arrow {
+          transition: transform 0.3s ease;
+          font-size: 0.75rem;
+          opacity: 0.6;
+          display: inline-block;
+        }
+        .proj-arrow.open {
+          transform: rotate(180deg);
+          opacity: 1;
+        }
+
+        .proj-row {
+          display: flex; align-items: center; gap: 1rem;
+          padding: 1.2rem 1.4rem;
+          transition: background 0.2s;
+          border-radius: 12px 12px 0 0;
+        }
+        .proj-row.clickable { cursor: pointer; }
+        .proj-row.clickable:hover { background: ${t.tealDim}; }
 
         .level-btn {
           display: flex; align-items: center; gap: 0.6rem;
@@ -114,6 +169,22 @@ export default function Specialist() {
           border-color: ${t.tealMid};
           transform: translateX(4px);
           box-shadow: 0 4px 20px ${t.tealDim};
+        }
+
+        .proj-card {
+          border-radius: 12px;
+          border: 1px solid ${t.tealBorder};
+          background: ${t.card};
+          transition: border-color 0.25s, box-shadow 0.25s;
+          margin-bottom: 0.8rem;
+          overflow: hidden;
+        }
+        .proj-card:hover {
+          border-color: ${t.tealMid};
+          box-shadow: 0 4px 20px ${t.tealDim};
+        }
+        .proj-card.expanded {
+          border-color: ${t.teal};
         }
 
         .resource-link {
@@ -253,80 +324,158 @@ export default function Specialist() {
                 Loading content...
               </div>
             ) : (
-
-              /* PROJECTS TAB */
-              activeTab === 'projects' && (
-                <div>
-                  <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
-                    {levels[activeLevel]?.level_name} Projects
-                  </div>
-                  {currentContent.projects?.length === 0 ? (
-                    <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
-                      No projects added yet for this level.
+              <>
+                {/* ── PROJECTS TAB ── */}
+                {activeTab === 'projects' && (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
+                      {levels[activeLevel]?.level_name} Projects
                     </div>
-                  ) : currentContent.projects?.map((p, i) => (
-                    <div key={i} className="content-card" style={{ animationDelay: `${i * 0.05}s` }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: `${levelColors[activeLevel]}20`, border: `1px solid ${levelColors[activeLevel]}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-                        {levelIcons[activeLevel]}
+
+                    {currentContent.projects?.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
+                        No projects added yet for this level.
                       </div>
-                      <div>
-                        <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.3rem' }}>{p.title}</div>
-                        {p.description && <div style={{ fontSize: '0.88rem', color: t.textDim, lineHeight: 1.6 }}>{p.description}</div>}
+                    ) : currentContent.projects?.map((p, i) => {
+                      const isOpen = !!expandedProjects[i]
+                      const descLines = parseDesc(p.description)
+                      const hasDesc = descLines.length > 0
+
+                      return (
+                        <div
+                          key={i}
+                          className={`proj-card ${isOpen ? 'expanded' : ''}`}
+                          style={{ animationDelay: `${i * 0.05}s` }}
+                        >
+                          {/* ── Clickable header row ── */}
+                          <div
+                            className={`proj-row ${hasDesc ? 'clickable' : ''}`}
+                            onClick={() => hasDesc && toggleProject(i)}
+                          >
+                            {/* Level icon */}
+                            <div style={{ width: 36, height: 36, borderRadius: 8, background: `${levelColors[activeLevel]}20`, border: `1px solid ${levelColors[activeLevel]}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                              {levelIcons[activeLevel]}
+                            </div>
+
+                            {/* Title + difficulty */}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: p.difficulty ? '0.3rem' : 0 }}>
+                                {p.title}
+                              </div>
+                              {p.difficulty && (
+                                <div style={{ display: 'inline-block', fontSize: '0.72rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: levelColors[activeLevel], background: `${levelColors[activeLevel]}15`, border: `1px solid ${levelColors[activeLevel]}30`, borderRadius: 50, padding: '0.15rem 0.6rem' }}>
+                                  {p.difficulty}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Arrow toggle */}
+                            {hasDesc && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: isOpen ? t.teal : t.textDim, fontSize: '0.8rem', fontFamily: "'Rajdhani',sans-serif", fontWeight: 600, flexShrink: 0, transition: 'color 0.2s' }}>
+                                <span>{isOpen ? 'Hide' : 'Show'}</span>
+                                <span className={`proj-arrow ${isOpen ? 'open' : ''}`} style={{ color: isOpen ? t.teal : t.textDim }}>▼</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* ── Collapsible description ── */}
+                          {hasDesc && isOpen && (
+                            <div className="desc-open">
+                              <div style={{ height: 1, background: t.tealBorder, margin: '0 1.4rem' }} />
+                              <div style={{ padding: '1.1rem 1.4rem 1.4rem' }}>
+                                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                                  {descLines.map((line, li) => {
+
+                                    // Bold header → **text**
+                                    if (isHeader(line)) {
+                                      return (
+                                        <li key={li} style={{ fontWeight: 700, color: t.teal, fontSize: '0.82rem', letterSpacing: '1px', textTransform: 'uppercase', marginTop: li > 0 ? '0.4rem' : 0 }}>
+                                          {stripBold(line)}
+                                        </li>
+                                      )
+                                    }
+
+                                    // Numbered line → 1. text
+                                    const numMatch = line.match(/^(\d+)\.\s*(.+)/)
+                                    if (numMatch) {
+                                      return (
+                                        <li key={li} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                                          <span style={{ minWidth: 22, height: 22, borderRadius: '50%', background: `${levelColors[activeLevel]}20`, border: `1px solid ${levelColors[activeLevel]}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: levelColors[activeLevel], flexShrink: 0, marginTop: '0.1rem' }}>
+                                            {numMatch[1]}
+                                          </span>
+                                          <span style={{ color: t.text, fontSize: '0.88rem', lineHeight: 1.65 }}>{numMatch[2]}</span>
+                                        </li>
+                                      )
+                                    }
+
+                                    // Plain bullet line
+                                    return (
+                                      <li key={li} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', fontSize: '0.88rem', lineHeight: 1.65 }}>
+                                        <span style={{ color: t.teal, fontSize: '1rem', marginTop: '0.05rem', flexShrink: 0, lineHeight: 1.4 }}>›</span>
+                                        <span style={{ color: t.textDim }}>{line}</span>
+                                      </li>
+                                    )
+                                  })}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* ── CERTIFICATES TAB ── */}
+                {activeTab === 'certificates' && (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
+                      {levels[activeLevel]?.level_name} Certificates
+                    </div>
+                    {currentContent.certificates?.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
+                        No certificates added yet for this level.
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-
-            {/* CERTIFICATES TAB */}
-            {activeTab === 'certificates' && currentContent && (
-              <div>
-                <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
-                  {levels[activeLevel]?.level_name} Certificates
-                </div>
-                {currentContent.certificates?.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
-                    No certificates added yet for this level.
+                    ) : currentContent.certificates?.map((c, i) => (
+                      <a key={i} href={c.url} target="_blank" rel="noreferrer" className="cert-link">
+                        <div style={{ width: 36, height: 36, borderRadius: 8, background: accentDim, border: `1px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                          🏆
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{c.name}</div>
+                          {c.provider && <div style={{ fontSize: '0.82rem', color: t.textDim }}>{c.provider}</div>}
+                        </div>
+                        <div style={{ color: accent, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
+                      </a>
+                    ))}
                   </div>
-                ) : currentContent.certificates?.map((c, i) => (
-                  <a key={i} href={c.url} target="_blank" rel="noreferrer" className="cert-link">
-                    <div style={{ width: 36, height: 36, borderRadius: 8, background: accentDim, border: `1px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-                      🏆
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{c.name}</div>
-                      {c.provider && <div style={{ fontSize: '0.82rem', color: t.textDim }}>{c.provider}</div>}
-                    </div>
-                    <div style={{ color: accent, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
-                  </a>
-                ))}
-              </div>
-            )}
+                )}
 
-            {/* RESOURCES TAB */}
-            {activeTab === 'resources' && currentContent && (
-              <div>
-                <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
-                  {levels[activeLevel]?.level_name} Resources
-                </div>
-                {currentContent.resources?.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
-                    No resources added yet for this level.
+                {/* ── RESOURCES TAB ── */}
+                {activeTab === 'resources' && (
+                  <div>
+                    <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1.2rem', fontFamily: "'Orbitron',monospace" }}>
+                      {levels[activeLevel]?.level_name} Resources
+                    </div>
+                    {currentContent.resources?.length === 0 ? (
+                      <div style={{ textAlign: 'center', color: t.textDim, padding: '2rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>
+                        No resources added yet for this level.
+                      </div>
+                    ) : currentContent.resources?.map((r, i) => (
+                      <a key={i} href={r.url} target="_blank" rel="noreferrer" className="resource-link">
+                        <div style={{ width: 36, height: 36, borderRadius: 8, background: t.tealDim, border: `1px solid ${t.tealBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
+                          {r.type === 'video' ? '🎥' : r.type === 'course' ? '🎓' : r.type === 'tool' ? '🛠️' : '📄'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{r.title}</div>
+                          <div style={{ fontSize: '0.78rem', color: t.textDim, textTransform: 'uppercase', letterSpacing: '1px' }}>{r.type}</div>
+                        </div>
+                        <div style={{ color: t.teal, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
+                      </a>
+                    ))}
                   </div>
-                ) : currentContent.resources?.map((r, i) => (
-                  <a key={i} href={r.url} target="_blank" rel="noreferrer" className="resource-link">
-                    <div style={{ width: 36, height: 36, borderRadius: 8, background: t.tealDim, border: `1px solid ${t.tealBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-                      {r.type === 'video' ? '🎥' : r.type === 'course' ? '🎓' : r.type === 'tool' ? '🛠️' : '📄'}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{r.title}</div>
-                      <div style={{ fontSize: '0.78rem', color: t.textDim, textTransform: 'uppercase', letterSpacing: '1px' }}>{r.type}</div>
-                    </div>
-                    <div style={{ color: t.teal, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
-                  </a>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         </main>

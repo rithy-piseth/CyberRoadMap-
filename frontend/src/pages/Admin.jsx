@@ -28,9 +28,10 @@ export default function Admin() {
 
   // Projects
   const [projects, setProjects] = useState([])
-  const [projForm, setProjForm] = useState({ level_id: '', title: '', description: '' })
+  const [projForm, setProjForm] = useState({ level_id: '', title: '', description: '', url: '', difficulty: 'easy' })
   const [editProjId, setEditProjId] = useState(null)
   const [editProjForm, setEditProjForm] = useState({})
+  const [expandedDescId, setExpandedDescId] = useState(null)
 
   // Certificates
   const [certs, setCerts] = useState([])
@@ -91,7 +92,7 @@ export default function Admin() {
     if (selectedSpec?.id === spec.id) { setSelectedSpec(null); setResources([]); setProjects([]); setCerts([]); setLevels([]); return }
     setSelectedSpec(spec)
     setResForm({ level_id: '', title: '', url: '', type: 'article' })
-    setProjForm({ level_id: '', title: '', description: '' })
+    setProjForm({ level_id: '', title: '', description: '', url: '', difficulty: 'easy' })
     setCertForm({ level_id: '', name: '', provider: '', url: '' })
     setEditResId(null); setEditProjId(null); setEditCertId(null)
     API.get(`/api/specialists/${spec.slug}`).then(res => setLevels(res.data.levels || [])).catch(() => {})
@@ -125,8 +126,12 @@ export default function Admin() {
   // ── Project handlers ──
   const handleAddProject = async () => {
     if (!projForm.level_id || !projForm.title) { showMsg('Level and title required', 'error'); return }
-    try { await API.post('/api/admin/projects', projForm); showMsg('✅ Project added!'); setProjForm({ level_id: '', title: '', description: '' }); loadSpecContent(selectedSpec) }
-    catch { showMsg('❌ Failed', 'error') }
+    try {
+      await API.post('/api/admin/projects', projForm)
+      showMsg('✅ Project added!')
+      setProjForm({ level_id: '', title: '', description: '', url: '', difficulty: 'easy' })
+      loadSpecContent(selectedSpec)
+    } catch { showMsg('❌ Failed', 'error') }
   }
   const handleUpdateProject = async (id) => {
     try { await API.put(`/api/admin/projects/${id}`, editProjForm); showMsg('✅ Updated!'); setEditProjId(null); loadSpecContent(selectedSpec) }
@@ -182,12 +187,19 @@ export default function Admin() {
   const blueColor = darkMode ? '#4fc3f7' : '#2b6cb0'
   const redColor = darkMode ? '#ff6b6b' : '#c53030'
 
-  // Reusable label
+  const difficultyConfig = {
+    easy:         { label: 'Easy',         color: '#22c55e', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.3)'  },
+    intermediate: { label: 'Intermediate', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)' },
+    hard:         { label: 'Hard',         color: '#ef4444', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.3)'  },
+    challenge:    { label: 'Challenge ⚡',  color: '#a855f7', bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.3)' },
+  }
+
+  const DESC_LIMIT = 80
+
   const Label = ({ text }) => (
     <label style={{ display: 'block', fontSize: '0.75rem', color: t.textDim, marginBottom: '0.35rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{text}</label>
   )
 
-  // Level select reused across all 3 content types
   const LevelSelect = ({ value, onChange }) => (
     <select className="adm-in" value={value} onChange={e => onChange(e.target.value)}>
       <option value="">Select level</option>
@@ -195,13 +207,11 @@ export default function Admin() {
     </select>
   )
 
-  // Generic row buttons
   const EditBtn = ({ onClick }) => <button className="be" onClick={onClick}>Edit</button>
   const DelBtn = ({ onClick }) => <button className="bd" onClick={onClick}>Delete</button>
   const SaveBtn = ({ onClick }) => <button className="bs" onClick={onClick}>Save</button>
   const CancelBtn = ({ onClick }) => <button className="be" onClick={onClick}>Cancel</button>
 
-  // Team accordion section
   const TeamSection = ({ team, specs, color, icon, label }) => (
     <div style={{ marginBottom: '0.6rem' }}>
       <div onClick={() => handleToggleTeam(team)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.9rem 1.1rem', borderRadius: 10, border: `1px solid ${expandedTeam === team ? color : t.tealBorder}`, background: expandedTeam === team ? `${color}12` : t.card, cursor: 'pointer', transition: 'all 0.25s', userSelect: 'none' }}>
@@ -234,6 +244,7 @@ export default function Admin() {
         @keyframes floatUp{0%,100%{transform:translateY(0);opacity:0.4}50%{transform:translateY(-20px);opacity:0.7}}
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes descExpand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 
         .adm-in{width:100%;padding:0.65rem 1rem;background:${t.inputBg};border:1px solid ${t.inputBorder};border-radius:8px;color:${t.text};font-family:'Rajdhani',sans-serif;font-size:0.93rem;outline:none;transition:all 0.2s}
         .adm-in:focus{border-color:${t.teal};box-shadow:0 0 0 3px ${t.tealDim}}
@@ -248,11 +259,25 @@ export default function Admin() {
         .ctab-btn:hover{color:${t.text};border-color:${t.tealMid}}
         .ctab-btn.active{color:${t.teal};border-color:${t.teal};background:${t.tealDim}}
 
-        .row{display:grid;align-items:center;gap:0.7rem;padding:0.9rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:all 0.2s}
+        .row{display:grid;align-items:start;gap:0.7rem;padding:0.9rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:all 0.2s}
         .row:hover{border-color:${t.tealMid}}
         .row-res{grid-template-columns:2fr 2fr auto auto auto}
-        .row-proj{grid-template-columns:2fr 3fr auto auto}
         .row-cert{grid-template-columns:2fr 1.5fr 2fr auto auto}
+
+        .proj-card{padding:1rem 1.2rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:border-color 0.2s}
+        .proj-card:hover{border-color:${t.tealMid}}
+
+        .desc-toggle{display:inline-flex;align-items:center;gap:0.3rem;cursor:pointer;font-size:0.78rem;color:${t.teal};background:none;border:none;padding:0.2rem 0.5rem;border-radius:4px;transition:all 0.2s;font-family:'Rajdhani',sans-serif;font-weight:600}
+        .desc-toggle:hover{background:${t.tealDim}}
+        .desc-arrow{display:inline-block;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);font-size:0.7rem}
+        .desc-arrow.open{transform:rotate(180deg)}
+        .desc-body{overflow:hidden;transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease}
+        .desc-body.collapsed{max-height:0;opacity:0}
+        .desc-body.expanded{max-height:600px;opacity:1}
+        .desc-content{padding:0.6rem 0 0.2rem;font-size:0.83rem;color:${t.textDim};line-height:1.6;animation:descExpand 0.25s ease both}
+        .desc-content ul,.desc-content ol{padding-left:1.3rem;margin:0.3rem 0}
+        .desc-content li{margin-bottom:0.25rem}
+        .desc-content p{margin-bottom:0.3rem}
 
         .q-card{background:${t.card};border:1px solid ${t.tealBorder};border-radius:12px;padding:1.1rem;margin-bottom:0.7rem;transition:all 0.2s}
         .q-card:hover{border-color:${t.tealMid}}
@@ -270,7 +295,7 @@ export default function Admin() {
         .bd{background:${t.errorBg};border:1px solid ${t.errorBorder};color:${t.errorText};font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:600;cursor:pointer;padding:0.3rem 0.75rem;border-radius:6px;white-space:nowrap}
         .bs{background:${t.teal};border:none;color:${t.bg};font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;padding:0.3rem 0.75rem;border-radius:6px;white-space:nowrap}
 
-        @media(max-width:900px){.agrid{grid-template-columns:1fr !important}.row-res,.row-proj,.row-cert,.u-row{grid-template-columns:1fr !important}}
+        @media(max-width:900px){.agrid{grid-template-columns:1fr !important}.row-res,.row-cert,.u-row{grid-template-columns:1fr !important}}
       `}</style>
 
       {particles.map(p => (<div key={p.id} style={{ position: 'fixed', left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, borderRadius: '50%', background: darkMode ? 'rgba(100,255,218,0.3)' : 'rgba(13,115,119,0.1)', animation: `floatUp ${p.duration}s ease-in-out ${p.delay}s infinite`, pointerEvents: 'none', zIndex: 0 }} />))}
@@ -288,7 +313,6 @@ export default function Admin() {
           <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 900, color: t.text }}>Control Center</h1>
         </div>
 
-        {/* Notification */}
         {msg && <div style={{ background: msgType === 'success' ? t.tealDim : t.errorBg, border: `1px solid ${msgType === 'success' ? t.teal : t.errorBorder}`, borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1.2rem', color: msgType === 'success' ? t.teal : t.errorText, fontSize: '0.88rem', animation: 'fadeUp 0.3s ease both' }}>{msg}</div>}
 
         {/* Main tabs */}
@@ -327,18 +351,15 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ── CONTENT (Resources + Projects + Certificates) ── */}
+        {/* ── CONTENT ── */}
         {activeTab === 'content' && (
           <div className="agrid" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '2rem', alignItems: 'start', animation: 'fadeUp 0.4s ease both' }}>
-
-            {/* Specialist sidebar */}
             <div style={{ position: 'sticky', top: '6rem' }}>
               <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.8rem', fontFamily: "'Orbitron',monospace" }}>Select Specialist</div>
               <TeamSection team="blue" specs={blueSpecs} color={blueColor} icon="🛡️" label="Blue Team" />
               <TeamSection team="red" specs={redSpecs} color={redColor} icon="⚔️" label="Red Team" />
             </div>
 
-            {/* Right content panel */}
             <div>
               {!selectedSpec ? (
                 <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 14, padding: '4rem', textAlign: 'center' }}>
@@ -346,7 +367,6 @@ export default function Admin() {
                   <div style={{ color: t.textDim, fontFamily: "'Orbitron',monospace", fontSize: '0.82rem', letterSpacing: '1px' }}>Click a team, then select a specialist</div>
                 </div>
               ) : (<>
-                {/* Specialist header */}
                 <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.1rem 1.4rem', marginBottom: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <span style={{ fontSize: '1.6rem' }}>{selectedSpec.isBlue ? '🛡️' : '⚔️'}</span>
                   <div>
@@ -355,7 +375,6 @@ export default function Admin() {
                   </div>
                 </div>
 
-                {/* Content sub-tabs */}
                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.2rem' }}>
                   {[
                     { key: 'resources', label: `📚 Resources (${resources.length})` },
@@ -411,30 +430,146 @@ export default function Admin() {
 
                 {/* ── PROJECTS ── */}
                 {contentTab === 'projects' && (<>
+                  {/* Add Project Form */}
                   <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
                     <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Project</div>
-                    <div style={{ marginBottom: '0.8rem' }}><Label text="Level" /><LevelSelect value={projForm.level_id} onChange={v => setProjForm({ ...projForm, level_id: v })} /></div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                      <div><Label text="Level" /><LevelSelect value={projForm.level_id} onChange={v => setProjForm({ ...projForm, level_id: v })} /></div>
+                      <div>
+                        <Label text="Difficulty" />
+                        <select className="adm-in" value={projForm.difficulty} onChange={e => setProjForm({ ...projForm, difficulty: e.target.value })}>
+                          <option value="easy">🟢 Easy</option>
+                          <option value="intermediate">🟡 Intermediate</option>
+                          <option value="hard">🔴 Hard</option>
+                          <option value="challenge">⚡ Challenge</option>
+                        </select>
+                      </div>
+                    </div>
                     <div style={{ marginBottom: '0.7rem' }}><Label text="Title" /><input className="adm-in" placeholder="Project title" value={projForm.title} onChange={e => setProjForm({ ...projForm, title: e.target.value })} /></div>
-                    <div style={{ marginBottom: '0.9rem' }}><Label text="Description" /><textarea className="adm-in" placeholder="What will the user build or do?" value={projForm.description} onChange={e => setProjForm({ ...projForm, description: e.target.value })} style={{ resize: 'vertical', minHeight: 70 }} /></div>
+                    <div style={{ marginBottom: '0.7rem' }}>
+                      <Label text="Description (supports • bullets and 1. numbered lists)" />
+                      <textarea
+                        className="adm-in"
+                        placeholder={"What will the user build?\n• Use • or - for bullet points\n1. Or numbers for ordered steps"}
+                        value={projForm.description}
+                        onChange={e => setProjForm({ ...projForm, description: e.target.value })}
+                        style={{ resize: 'vertical', minHeight: 90, lineHeight: 1.6 }}
+                      />
+                      <div style={{ fontSize: '0.72rem', color: t.textDim, marginTop: '0.3rem' }}>
+                        Tip: Start lines with <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>•</code> or <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>-</code> for bullets · <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>1.</code> for numbered steps
+                      </div>
+                    </div>
+                    <div style={{ marginBottom: '0.9rem' }}>
+                      <Label text="Exercise URL (optional)" />
+                      <input className="adm-in" placeholder="https://... (link to exercise page)" value={projForm.url} onChange={e => setProjForm({ ...projForm, url: e.target.value })} />
+                    </div>
                     <button className="bp" onClick={handleAddProject}>+ Add Project</button>
                   </div>
+
+                  {/* Project list */}
                   <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Projects ({projects.length})</div>
-                  {projects.length === 0 ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No projects yet</div>
-                    : projects.map(p => (
-                      <div key={p.id} className="row row-proj">
-                        {editProjId === p.id ? (<>
-                          <input className="adm-in" value={editProjForm.title} onChange={e => setEditProjForm({ ...editProjForm, title: e.target.value })} />
-                          <input className="adm-in" value={editProjForm.description} onChange={e => setEditProjForm({ ...editProjForm, description: e.target.value })} />
-                          <SaveBtn onClick={() => handleUpdateProject(p.id)} />
-                          <CancelBtn onClick={() => setEditProjId(null)} />
-                        </>) : (<>
-                          <div><div style={{ fontSize: '0.87rem', fontWeight: 600, color: t.text }}>🛠️ {p.title}</div><div style={{ fontSize: '0.73rem', color: t.textDim }}>{p.level_name}</div></div>
-                          <div style={{ fontSize: '0.82rem', color: t.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.description}</div>
-                          <EditBtn onClick={() => { setEditProjId(p.id); setEditProjForm({ title: p.title, description: p.description }) }} />
-                          <DelBtn onClick={() => handleDeleteProject(p.id)} />
-                        </>)}
-                      </div>
-                    ))}
+                  {projects.length === 0
+                    ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No projects yet</div>
+                    : projects.map(p => {
+                      const isExpanded = expandedDescId === p.id
+                      const isLong = (p.description || '').length > DESC_LIMIT
+                      const diff = difficultyConfig[p.difficulty] || difficultyConfig.easy
+
+                      return (
+                        <div key={p.id} className="proj-card">
+                          {editProjId === p.id ? (
+                            /* ── EDIT MODE ── */
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem' }}>
+                                <div>
+                                  <Label text="Title" />
+                                  <input className="adm-in" value={editProjForm.title} onChange={e => setEditProjForm({ ...editProjForm, title: e.target.value })} />
+                                </div>
+                                <div>
+                                  <Label text="Difficulty" />
+                                  <select className="adm-in" value={editProjForm.difficulty || 'easy'} onChange={e => setEditProjForm({ ...editProjForm, difficulty: e.target.value })}>
+                                    <option value="easy">🟢 Easy</option>
+                                    <option value="intermediate">🟡 Intermediate</option>
+                                    <option value="hard">🔴 Hard</option>
+                                    <option value="challenge">⚡ Challenge</option>
+                                  </select>
+                                </div>
+                              </div>
+                              <div>
+                                <Label text="Description" />
+                                <textarea className="adm-in" value={editProjForm.description} onChange={e => setEditProjForm({ ...editProjForm, description: e.target.value })} style={{ resize: 'vertical', minHeight: 80 }} />
+                              </div>
+                              <div>
+                                <Label text="Exercise URL" />
+                                <input className="adm-in" placeholder="https://..." value={editProjForm.url || ''} onChange={e => setEditProjForm({ ...editProjForm, url: e.target.value })} />
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <SaveBtn onClick={() => handleUpdateProject(p.id)} />
+                                <CancelBtn onClick={() => setEditProjId(null)} />
+                              </div>
+                            </div>
+                          ) : (
+                            /* ── VIEW MODE ── */
+                            <div>
+                              {/* Top row: title + difficulty badge + actions */}
+                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.7rem' }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}>🛠️ {p.title}</span>
+                                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: 20, background: diff.bg, border: `1px solid ${diff.border}`, color: diff.color, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                                      {diff.label}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: '0.73rem', color: t.textDim }}>{p.level_name}</div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, marginTop: '0.1rem' }}>
+                                  <EditBtn onClick={() => { setEditProjId(p.id); setEditProjForm({ title: p.title, description: p.description || '', url: p.url || '', difficulty: p.difficulty || 'easy' }) }} />
+                                  <DelBtn onClick={() => handleDeleteProject(p.id)} />
+                                </div>
+                              </div>
+
+                              {/* Exercise URL link */}
+                              {p.url && (
+                                <div style={{ marginTop: '0.45rem' }}>
+                                  <a
+                                    href={p.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: t.teal, textDecoration: 'none', padding: '0.2rem 0.6rem', borderRadius: 5, border: `1px solid ${t.tealBorder}`, background: t.tealDim, transition: 'all 0.2s' }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = t.teal}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = t.tealBorder}
+                                  >
+                                    🔗 Exercise Page
+                                  </a>
+                                </div>
+                              )}
+
+                              {/* Description with collapse/expand */}
+                              {p.description && (
+                                <div style={{ marginTop: '0.55rem' }}>
+                                  {isLong ? (
+                                    <>
+                                      <button
+                                        className="desc-toggle"
+                                        onClick={() => setExpandedDescId(isExpanded ? null : p.id)}
+                                      >
+                                        <span className={`desc-arrow ${isExpanded ? 'open' : ''}`}>▼</span>
+                                        {isExpanded ? 'Hide description' : 'Show description'}
+                                      </button>
+                                      <div className={`desc-body ${isExpanded ? 'expanded' : 'collapsed'}`}>
+                                        <DescriptionRenderer text={p.description} t={t} />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <DescriptionRenderer text={p.description} t={t} />
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                 </>)}
 
                 {/* ── CERTIFICATES ── */}
@@ -601,4 +736,59 @@ export default function Admin() {
       </main>
     </div>
   )
+}
+
+// ── Description renderer: parses • / - / * bullets and 1. numbered lists ──
+function DescriptionRenderer({ text, t }) {
+  if (!text) return null
+
+  const lines = text.split('\n').filter(l => l.trim() !== '')
+  const elements = []
+  let ulBuffer = []
+  let olBuffer = []
+
+  const flushUl = () => {
+    if (!ulBuffer.length) return
+    elements.push(
+      <ul key={`ul-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>
+        {ulBuffer.map((item, i) => (
+          <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>
+        ))}
+      </ul>
+    )
+    ulBuffer = []
+  }
+  const flushOl = () => {
+    if (!olBuffer.length) return
+    elements.push(
+      <ol key={`ol-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>
+        {olBuffer.map((item, i) => (
+          <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>
+        ))}
+      </ol>
+    )
+    olBuffer = []
+  }
+
+  lines.forEach((line, i) => {
+    const trimmed = line.trim()
+    const isBullet = /^[•\-*]\s/.test(trimmed)
+    const isNumbered = /^\d+[\.\)]\s/.test(trimmed)
+
+    if (isBullet) {
+      flushOl()
+      ulBuffer.push(trimmed.replace(/^[•\-*]\s+/, ''))
+    } else if (isNumbered) {
+      flushUl()
+      olBuffer.push(trimmed.replace(/^\d+[\.\)]\s+/, ''))
+    } else {
+      flushUl(); flushOl()
+      elements.push(
+        <p key={`p-${i}`} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.25rem', lineHeight: 1.6 }}>{trimmed}</p>
+      )
+    }
+  })
+
+  flushUl(); flushOl()
+  return <div className="desc-content">{elements}</div>
 }

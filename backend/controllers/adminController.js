@@ -101,9 +101,8 @@ exports.addSpecialist = (req, res) => {
   )
 }
 
-// ── ADD THESE TO YOUR EXISTING adminController.js ──
-
 // ── PROJECTS ──────────────────────────────────────
+
 
 exports.getAllProjects = (req, res) => {
   db.query(`
@@ -119,25 +118,29 @@ exports.getAllProjects = (req, res) => {
 }
 
 exports.addProject = (req, res) => {
-  const { level_id, title, description } = req.body
+  const { level_id, title, description, url, difficulty } = req.body
   if (!level_id || !title) return res.status(400).json({ message: 'level_id and title required' })
-  db.query('INSERT INTO projects (level_id, title, description) VALUES (?, ?, ?)',
-    [level_id, title, description || ''],
+  db.query(
+    'INSERT INTO projects (level_id, title, description, url, difficulty) VALUES (?, ?, ?, ?, ?)',
+    [level_id, title, description || '', url || null, difficulty || 'easy'],
     (err, result) => {
       if (err) return res.status(500).json({ message: 'Failed to add project' })
       res.json({ success: true, id: result.insertId })
-    })
+    }
+  )
 }
 
 exports.updateProject = (req, res) => {
   const { id } = req.params
-  const { title, description } = req.body
-  db.query('UPDATE projects SET title=?, description=? WHERE id=?',
-    [title, description, id],
+  const { title, description, url, difficulty } = req.body
+  db.query(
+    'UPDATE projects SET title=?, description=?, url=?, difficulty=? WHERE id=?',
+    [title, description, url || null, difficulty || 'easy', id],
     (err) => {
       if (err) return res.status(500).json({ message: 'Failed to update' })
       res.json({ success: true })
-    })
+    }
+  )
 }
 
 exports.deleteProject = (req, res) => {
