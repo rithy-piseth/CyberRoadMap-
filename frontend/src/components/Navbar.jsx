@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import MoonImg from '../assets/images/Moon.jpg'
+import SunImg from '../assets/images/Sun.jpg'
+import LogoImg from '../assets/images/Logo.png'
 
 export default function Navbar({ activePage = 'home' }) {
   const navigate = useNavigate()
@@ -80,11 +83,21 @@ export default function Navbar({ activePage = 'home' }) {
 
         {/* Logo */}
         <div
-          style={{ display:'flex', alignItems:'center', gap:'0.6rem', fontFamily:"'Orbitron',monospace", fontSize:'1rem', fontWeight:700, color:t.teal, cursor:'pointer' }}
+          style={{ display:'flex', alignItems:'center', gap:'0.6rem', cursor:'pointer' }}
           onClick={() => navigate('/')}
         >
-          <div style={{ width:32, height:32, border:`2px solid ${t.teal}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, background:t.tealDim, clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)', transition:'all 0.3s' }}>⬡</div>
-          Cyber.road
+          <img
+            src={LogoImg}
+            alt="CyberRoadMap Logo"
+            style={{
+              height: 56,
+              width: 'auto',
+              objectFit: 'contain',
+            }}
+          />
+          <span style={{ fontFamily:"'Orbitron',monospace", fontSize:'1rem', fontWeight:700, color:t.teal }}>
+            CyberRoadMap
+          </span>
         </div>
 
         {/* Show different nav based on login status */}
@@ -103,7 +116,17 @@ export default function Navbar({ activePage = 'home' }) {
         {/* Right side */}
         <div style={{ display:'flex', alignItems:'center', gap:'0.8rem' }}>
           {/* Theme toggle */}
-          <span style={{ fontSize:'1rem' }}>{darkMode ? '🌙' : '☀️'}</span>
+          <img
+            src={darkMode ? MoonImg : SunImg}
+            alt={darkMode ? 'Moon' : 'Sun'}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: `1px solid ${t.tealBorder}`
+            }}
+          />
           <div className="nav-toggle" onClick={toggleTheme}>
             <div className="nav-toggle-knob" />
           </div>
