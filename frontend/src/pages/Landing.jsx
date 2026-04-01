@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import API from '../api/config'
 import Navbar from '../components/Navbar'
 import { useTheme } from '../context/ThemeContext'
+import blueImg from '../assets/images/Blue_Team.jpg'
+import redImg from '../assets/images/Red_Team.jpg'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -266,7 +268,19 @@ export default function Landing() {
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                   <div style={{ width: 50, height: 50, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', background: accentDim, border: `1px solid ${accentBorder}` }}>
-                    {blue ? '🛡️' : '⚔️'}
+                    {blue ? (
+                      <img
+                        src={blueImg}
+                        alt="Blue Team"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }}
+                      />
+                    ) : (
+                      <img
+                        src={redImg}
+                        alt="Red Team"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' , borderRadius: 10 }}
+                      />
+                    )}
                   </div>
                   <div>
                     <div style={{ fontFamily: "'Orbitron', monospace", fontSize: '1.1rem', fontWeight: 700, color: accent }}>{team.name}</div>

@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import API from '../api/config'
 import Navbar from '../components/Navbar'
 import { useTheme } from '../context/ThemeContext'
+import SeeImg from '../assets/images/See.png'
+import HideImg from '../assets/images/Hide.png'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -104,7 +106,9 @@ export default function Login() {
                 <label style={{ display:'block', fontSize:'0.8rem', color:t.textDim, marginBottom:'0.5rem', letterSpacing:'1px', textTransform:'uppercase' }}>Password</label>
                 <div style={{ position:'relative' }}>
                   <input className="auth-input" type={showPassword?'text':'password'} placeholder="••••••••" value={form.password} onChange={e => setForm({...form, password:e.target.value})} required />
-                  <button type="button" className="show-btn" onClick={() => setShowPassword(!showPassword)}>{showPassword?'🙈':'👁️'}</button>
+                  <button type="button" className="show-btn" onClick={() => setShowPassword(!showPassword)}>
+                    <img src={showPassword ? HideImg : SeeImg} alt="toggle" style={{ width:35, height:35, objectFit:'contain' }} />
+                  </button>
                 </div>
               </div>
               <button className="auth-btn" type="submit" disabled={loading}>{loading?'Signing in...':'Login'}</button>
