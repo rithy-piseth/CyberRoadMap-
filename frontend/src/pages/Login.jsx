@@ -67,7 +67,7 @@ export default function Login() {
       <div style={{ position:'relative', zIndex:1, minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'6rem 2rem 4rem' }}>
         <div style={{ width:'100%', maxWidth:420, animation:'fadeSlideUp 0.6s ease both' }}>
           <div style={{ textAlign:'center', marginBottom:'2rem' }}>
-            <div style={{ fontFamily:"'Orbitron',monospace", fontSize:'1.5rem', fontWeight:900, color:t.teal, marginBottom:'0.5rem' }}>Cyber.road</div>
+            <div style={{ fontFamily:"'Orbitron',monospace", fontSize:'1.5rem', fontWeight:900, color:t.teal, marginBottom:'0.5rem' }}>CyberRoadMap</div>
             <div style={{ color:t.textDim, fontSize:'0.9rem' }}>Sign in to your account</div>
           </div>
 

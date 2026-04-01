@@ -84,7 +84,7 @@ export default function Navbar({ activePage = 'home' }) {
           onClick={() => navigate('/')}
         >
           <div style={{ width:32, height:32, border:`2px solid ${t.teal}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, background:t.tealDim, clipPath:'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)', transition:'all 0.3s' }}>⬡</div>
-          Cyber.road
+          CyberRoadMap
         </div>
 
         {/* Show different nav based on login status */}
