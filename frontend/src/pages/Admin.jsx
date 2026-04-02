@@ -54,6 +54,9 @@ export default function Admin() {
   const [users, setUsers] = useState([])
   const [stats, setStats] = useState(null)
 
+  // Sidebar visibility on mobile
+  const [showSidebar, setShowSidebar] = useState(false)
+
   // Shared
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState('success')
@@ -98,6 +101,7 @@ export default function Admin() {
     setEditResId(null); setEditProjId(null); setEditCertId(null)
     API.get(`/api/specialists/${spec.slug}`).then(res => setLevels(res.data.levels || [])).catch(() => {})
     loadSpecContent(spec)
+    setShowSidebar(false) // close sidebar on mobile after selection
   }
 
   const loadSpecContent = (spec) => {
@@ -246,24 +250,31 @@ export default function Admin() {
         @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
         @keyframes descExpand{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes sidebarSlide{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
 
         .adm-in{width:100%;padding:0.65rem 1rem;background:${t.inputBg};border:1px solid ${t.inputBorder};border-radius:8px;color:${t.text};font-family:'Rajdhani',sans-serif;font-size:0.93rem;outline:none;transition:all 0.2s}
         .adm-in:focus{border-color:${t.teal};box-shadow:0 0 0 3px ${t.tealDim}}
         .adm-in::placeholder{color:${t.textDim}}
         select.adm-in option{background:${darkMode ? '#0a1628' : '#ffffff'};color:${t.text}}
 
-        .tab-btn{padding:0.55rem 1.1rem;border-radius:8px;border:none;background:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:600;color:${t.textDim};border-bottom:2px solid transparent;transition:all 0.2s}
+        .tab-btn{padding:0.55rem 0.9rem;border-radius:8px;border:none;background:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.85rem;font-weight:600;color:${t.textDim};border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
         .tab-btn:hover{color:${t.text}}
         .tab-btn.active{color:${t.teal};border-bottom-color:${t.teal}}
 
-        .ctab-btn{padding:0.4rem 1rem;border-radius:6px;border:1px solid ${t.tealBorder};background:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:600;color:${t.textDim};transition:all 0.2s}
+        .ctab-btn{padding:0.4rem 0.85rem;border-radius:6px;border:1px solid ${t.tealBorder};background:none;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:0.82rem;font-weight:600;color:${t.textDim};transition:all 0.2s;white-space:nowrap}
         .ctab-btn:hover{color:${t.text};border-color:${t.tealMid}}
         .ctab-btn.active{color:${t.teal};border-color:${t.teal};background:${t.tealDim}}
 
-        .row{display:grid;align-items:start;gap:0.7rem;padding:0.9rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:all 0.2s}
+        .row{display:flex;flex-direction:column;gap:0.5rem;padding:0.9rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:all 0.2s}
         .row:hover{border-color:${t.tealMid}}
-        .row-res{grid-template-columns:2fr 2fr auto auto auto}
-        .row-cert{grid-template-columns:2fr 1.5fr 2fr auto auto}
+
+        /* Desktop row layouts */
+        @media(min-width:700px){
+          .row-res{display:grid;grid-template-columns:2fr 2fr auto auto auto;align-items:center}
+          .row-cert{display:grid;grid-template-columns:2fr 1.5fr 2fr auto auto;align-items:center}
+        }
+
+        .row-actions{display:flex;gap:0.4rem;flex-wrap:wrap}
 
         .proj-card{padding:1rem 1.2rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.5rem;transition:border-color 0.2s}
         .proj-card:hover{border-color:${t.tealMid}}
@@ -283,8 +294,18 @@ export default function Admin() {
         .q-card{background:${t.card};border:1px solid ${t.tealBorder};border-radius:12px;padding:1.1rem;margin-bottom:0.7rem;transition:all 0.2s}
         .q-card:hover{border-color:${t.tealMid}}
 
-        .u-row{display:grid;grid-template-columns:1.5fr 2fr 1.5fr 1.5fr 1fr;align-items:center;gap:0.7rem;padding:0.85rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.45rem;transition:all 0.2s}
+        /* Users table — stacked on mobile, grid on desktop */
+        .u-row{display:flex;flex-direction:column;gap:0.35rem;padding:0.85rem 1.1rem;border-radius:10px;border:1px solid ${t.tealBorder};background:${t.card};margin-bottom:0.45rem;transition:all 0.2s}
         .u-row:hover{border-color:${t.tealMid}}
+        .u-row-meta{display:flex;flex-wrap:wrap;gap:0.35rem 1rem;font-size:0.78rem;color:${t.textDim}}
+        .u-row-meta span::before{content:'· ';color:${t.tealBorder}}
+        .u-row-meta span:first-child::before{content:''}
+        @media(min-width:860px){
+          .u-row{display:grid;grid-template-columns:1.5fr 2fr 1.5fr 1.5fr 1fr;align-items:center;gap:0.7rem}
+          .u-row-meta{display:contents}
+          .u-row-meta span::before{content:''}
+          .u-col-hide{display:block}
+        }
 
         .stat-card{background:${t.card};border:1px solid ${t.tealBorder};border-radius:12px;padding:1.3rem;text-align:center;transition:all 0.3s}
         .stat-card:hover{border-color:${t.tealMid};transform:translateY(-2px)}
@@ -296,7 +317,39 @@ export default function Admin() {
         .bd{background:${t.errorBg};border:1px solid ${t.errorBorder};color:${t.errorText};font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:600;cursor:pointer;padding:0.3rem 0.75rem;border-radius:6px;white-space:nowrap}
         .bs{background:${t.teal};border:none;color:${t.bg};font-family:'Rajdhani',sans-serif;font-size:0.83rem;font-weight:700;cursor:pointer;padding:0.3rem 0.75rem;border-radius:6px;white-space:nowrap}
 
-        @media(max-width:900px){.agrid{grid-template-columns:1fr !important}.row-res,.row-cert,.u-row{grid-template-columns:1fr !important}}
+        /* Sidebar toggle button — only on mobile */
+        .sidebar-toggle{display:flex;align-items:center;gap:0.5rem;padding:0.6rem 1rem;border-radius:8px;border:1px solid ${t.tealBorder};background:${t.card};color:${t.teal};font-family:'Rajdhani',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:1rem}
+        .sidebar-toggle:hover{border-color:${t.tealMid}}
+        @media(min-width:900px){.sidebar-toggle{display:none!important}}
+
+        /* Mobile sidebar overlay */
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;backdrop-filter:blur(2px)}
+        .sidebar-overlay.open{display:block}
+        .sidebar-drawer{position:fixed;left:0;top:0;bottom:0;width:min(280px,85vw);background:${t.bg};border-right:1px solid ${t.tealBorder};z-index:101;overflow-y:auto;padding:5rem 1rem 2rem;animation:sidebarSlide 0.2s ease both}
+
+        /* Content grid */
+        .content-grid{display:grid;grid-template-columns:1fr;gap:1.5rem}
+        @media(min-width:900px){.content-grid{grid-template-columns:260px 1fr;gap:2rem}}
+
+        /* Sidebar: visible on desktop, hidden on mobile (shown via drawer instead) */
+        .sidebar-desktop{display:none}
+        @media(min-width:900px){.sidebar-desktop{display:block;position:sticky;top:6rem}}
+
+        /* Stats grid */
+        .stats-grid{display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1.5rem}
+        @media(min-width:500px){.stats-grid{grid-template-columns:repeat(3,1fr);gap:1.2rem}}
+
+        /* Form 2-col grids collapse on small screens */
+        .form-2col{display:grid;grid-template-columns:1fr;gap:0.8rem;margin-bottom:0.8rem}
+        @media(min-width:500px){.form-2col{grid-template-columns:1fr 1fr}}
+
+        /* Content sub-tabs scroll on mobile */
+        .ctab-bar{display:flex;gap:0.5rem;margin-bottom:1.2rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+        .ctab-bar::-webkit-scrollbar{display:none}
+
+        /* Q options grid */
+        .q-opts{display:grid;grid-template-columns:1fr;gap:0.35rem}
+        @media(min-width:500px){.q-opts{grid-template-columns:1fr 1fr}}
       `}</style>
 
       {particles.map(p => (<div key={p.id} style={{ position: 'fixed', left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, borderRadius: '50%', background: darkMode ? 'rgba(100,255,218,0.3)' : 'rgba(13,115,119,0.1)', animation: `floatUp ${p.duration}s ease-in-out ${p.delay}s infinite`, pointerEvents: 'none', zIndex: 0 }} />))}
@@ -304,20 +357,20 @@ export default function Admin() {
 
       <Navbar activePage="admin" />
 
-      <main style={{ position: 'relative', zIndex: 1, padding: '6rem 2rem 4rem', maxWidth: 1300, margin: '0 auto' }}>
+      <main style={{ position: 'relative', zIndex: 1, padding: '6rem 1rem 4rem', maxWidth: 1300, margin: '0 auto' }}>
 
         {/* Header */}
         <div style={{ marginBottom: '2rem', animation: 'fadeUp 0.5s ease both' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', border: `1px solid ${t.tealMid}`, borderRadius: 50, padding: '0.3rem 1rem', fontSize: '0.72rem', color: t.teal, letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '0.8rem' }}>
             <div style={{ width: 5, height: 5, background: t.teal, borderRadius: '50%' }} /> Admin Panel
           </div>
-          <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.4rem,3vw,1.9rem)', fontWeight: 900, color: t.text }}>Control Center</h1>
+          <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.2rem,3vw,1.9rem)', fontWeight: 900, color: t.text }}>Control Center</h1>
         </div>
 
         {msg && <div style={{ background: msgType === 'success' ? t.tealDim : t.errorBg, border: `1px solid ${msgType === 'success' ? t.teal : t.errorBorder}`, borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '1.2rem', color: msgType === 'success' ? t.teal : t.errorText, fontSize: '0.88rem', animation: 'fadeUp 0.3s ease both' }}>{msg}</div>}
 
         {/* Main tabs */}
-        <div style={{ display: 'flex', gap: '0.2rem', borderBottom: `1px solid ${t.tealBorder}`, marginBottom: '2rem', overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: '0.2rem', borderBottom: `1px solid ${t.tealBorder}`, marginBottom: '2rem', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
           {[{ key: 'stats', label: '📊 Stats' }, { key: 'content', label: '📚 Content' }, { key: 'specialists', label: '➕ New Skill' }, { key: 'questions', label: '❓ Questions' }, { key: 'users', label: '👥 Users' }].map(tab => (
             <button key={tab.key} className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>{tab.label}</button>
           ))}
@@ -326,7 +379,7 @@ export default function Admin() {
         {/* ── STATS ── */}
         {activeTab === 'stats' && (
           <div style={{ animation: 'fadeUp 0.4s ease both' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1.2rem', marginBottom: '1.5rem' }}>
+            <div className="stats-grid">
               {[{ label: 'Total Users', val: stats?.totalUsers || 0 }, { label: 'Specialists', val: blueSpecs.length + redSpecs.length }, { label: 'Questions', val: questions.length }].map(s => (
                 <div key={s.label} className="stat-card">
                   <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '2.2rem', fontWeight: 900, color: t.teal }}>{s.val}</div>
@@ -354,258 +407,233 @@ export default function Admin() {
 
         {/* ── CONTENT ── */}
         {activeTab === 'content' && (
-          <div className="agrid" style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: '2rem', alignItems: 'start', animation: 'fadeUp 0.4s ease both' }}>
-            <div style={{ position: 'sticky', top: '6rem' }}>
-              <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.8rem', fontFamily: "'Orbitron',monospace" }}>Select Specialist</div>
-              <TeamSection team="blue" specs={blueSpecs} color={blueColor} icon="🛡️" label="Blue Team" />
-              <TeamSection team="red" specs={redSpecs} color={redColor} icon="⚔️" label="Red Team" />
+          <div style={{ animation: 'fadeUp 0.4s ease both' }}>
+
+            {/* Mobile sidebar toggle */}
+            <button className="sidebar-toggle" onClick={() => setShowSidebar(true)}>
+              <span>☰</span>
+              {selectedSpec ? `📋 ${selectedSpec.name}` : 'Select Specialist'}
+            </button>
+
+            {/* Mobile sidebar overlay */}
+            <div className={`sidebar-overlay ${showSidebar ? 'open' : ''}`} onClick={() => setShowSidebar(false)}>
+              <div className="sidebar-drawer" onClick={e => e.stopPropagation()}>
+                <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.8rem', fontFamily: "'Orbitron',monospace" }}>Select Specialist</div>
+                <TeamSection team="blue" specs={blueSpecs} color={blueColor} icon="🛡️" label="Blue Team" />
+                <TeamSection team="red" specs={redSpecs} color={redColor} icon="⚔️" label="Red Team" />
+              </div>
             </div>
 
-            <div>
-              {!selectedSpec ? (
-                <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 14, padding: '4rem', textAlign: 'center' }}>
-                  <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👆</div>
-                  <div style={{ color: t.textDim, fontFamily: "'Orbitron',monospace", fontSize: '0.82rem', letterSpacing: '1px' }}>Click a team, then select a specialist</div>
-                </div>
-              ) : (<>
-                <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.1rem 1.4rem', marginBottom: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <span style={{ fontSize: '1.6rem' }}>{selectedSpec.isBlue ? '🛡️' : '⚔️'}</span>
-                  <div>
-                    <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.95rem', fontWeight: 700, color: t.teal }}>{selectedSpec.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: t.textDim }}>{selectedSpec.team}</div>
+            <div className="content-grid">
+              {/* Desktop sidebar */}
+              <div className="sidebar-desktop">
+                <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.8rem', fontFamily: "'Orbitron',monospace" }}>Select Specialist</div>
+                <TeamSection team="blue" specs={blueSpecs} color={blueColor} icon="🛡️" label="Blue Team" />
+                <TeamSection team="red" specs={redSpecs} color={redColor} icon="⚔️" label="Red Team" />
+              </div>
+
+              <div>
+                {!selectedSpec ? (
+                  <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 14, padding: '4rem 2rem', textAlign: 'center' }}>
+                    <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>👆</div>
+                    <div style={{ color: t.textDim, fontFamily: "'Orbitron',monospace", fontSize: '0.82rem', letterSpacing: '1px' }}>Select a specialist to manage content</div>
                   </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.2rem' }}>
-                  {[
-                    { key: 'resources', label: `📚 Resources (${resources.length})` },
-                    { key: 'projects', label: `🛠️ Projects (${projects.length})` },
-                    { key: 'certificates', label: `🏆 Certificates (${certs.length})` },
-                  ].map(ct => (
-                    <button key={ct.key} className={`ctab-btn ${contentTab === ct.key ? 'active' : ''}`} onClick={() => setContentTab(ct.key)}>{ct.label}</button>
-                  ))}
-                </div>
-
-                {/* ── RESOURCES ── */}
-                {contentTab === 'resources' && (<>
-                  <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
-                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Resource</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
-                      <div><Label text="Level" /><LevelSelect value={resForm.level_id} onChange={v => setResForm({ ...resForm, level_id: v })} /></div>
-                      <div>
-                        <Label text="Type" />
-                        <select className="adm-in" value={resForm.type} onChange={e => setResForm({ ...resForm, type: e.target.value })}>
-                          <option value="article">📄 Article</option>
-                          <option value="video">🎥 Video</option>
-                          <option value="course">🎓 Course</option>
-                          <option value="tool">🛠️ Tool</option>
-                        </select>
-                      </div>
+                ) : (<>
+                  <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.1rem 1.4rem', marginBottom: '1.1rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                    <span style={{ fontSize: '1.6rem' }}>{selectedSpec.isBlue ? '🛡️' : '⚔️'}</span>
+                    <div>
+                      <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.95rem', fontWeight: 700, color: t.teal }}>{selectedSpec.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: t.textDim }}>{selectedSpec.team}</div>
                     </div>
-                    <div style={{ marginBottom: '0.7rem' }}><Label text="Title" /><input className="adm-in" placeholder="Resource title" value={resForm.title} onChange={e => setResForm({ ...resForm, title: e.target.value })} /></div>
-                    <div style={{ marginBottom: '0.9rem' }}><Label text="URL" /><input className="adm-in" placeholder="https://..." value={resForm.url} onChange={e => setResForm({ ...resForm, url: e.target.value })} /></div>
-                    <button className="bp" onClick={handleAddResource}>+ Add Resource</button>
                   </div>
-                  <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Resources ({resources.length})</div>
-                  {resources.length === 0 ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No resources yet</div>
-                    : resources.map(r => (
-                      <div key={r.id} className="row row-res">
-                        {editResId === r.id ? (<>
-                          <input className="adm-in" value={editResForm.title} onChange={e => setEditResForm({ ...editResForm, title: e.target.value })} />
-                          <input className="adm-in" value={editResForm.url} onChange={e => setEditResForm({ ...editResForm, url: e.target.value })} />
-                          <select className="adm-in" value={editResForm.type} onChange={e => setEditResForm({ ...editResForm, type: e.target.value })} style={{ width: 'auto' }}>
-                            <option value="article">📄</option><option value="video">🎥</option><option value="course">🎓</option><option value="tool">🛠️</option>
-                          </select>
-                          <SaveBtn onClick={() => handleUpdateResource(r.id)} />
-                          <CancelBtn onClick={() => setEditResId(null)} />
-                        </>) : (<>
-                          <div><div style={{ fontSize: '0.87rem', fontWeight: 600, color: t.text }}>{typeIcons[r.type]} {r.title}</div><div style={{ fontSize: '0.73rem', color: t.textDim }}>{r.level_name}</div></div>
-                          <a href={r.url} target="_blank" rel="noreferrer" style={{ fontSize: '0.77rem', color: t.teal, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.url}</a>
-                          <span style={{ fontSize: '0.7rem', color: t.textDim, textTransform: 'uppercase' }}>{r.type}</span>
-                          <EditBtn onClick={() => { setEditResId(r.id); setEditResForm({ title: r.title, url: r.url, type: r.type }) }} />
-                          <DelBtn onClick={() => handleDeleteResource(r.id)} />
-                        </>)}
-                      </div>
+
+                  <div className="ctab-bar">
+                    {[
+                      { key: 'resources', label: `📚 Resources (${resources.length})` },
+                      { key: 'projects', label: `🛠️ Projects (${projects.length})` },
+                      { key: 'certificates', label: `🏆 Certs (${certs.length})` },
+                    ].map(ct => (
+                      <button key={ct.key} className={`ctab-btn ${contentTab === ct.key ? 'active' : ''}`} onClick={() => setContentTab(ct.key)}>{ct.label}</button>
                     ))}
-                </>)}
-
-                {/* ── PROJECTS ── */}
-                {contentTab === 'projects' && (<>
-                  {/* Add Project Form */}
-                  <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
-                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Project</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
-                      <div><Label text="Level" /><LevelSelect value={projForm.level_id} onChange={v => setProjForm({ ...projForm, level_id: v })} /></div>
-                      <div>
-                        <Label text="Difficulty" />
-                        <select className="adm-in" value={projForm.difficulty} onChange={e => setProjForm({ ...projForm, difficulty: e.target.value })}>
-                          <option value="easy">🟢 Easy</option>
-                          <option value="intermediate">🟡 Intermediate</option>
-                          <option value="hard">🔴 Hard</option>
-                          <option value="challenge">⚡ Challenge</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: '0.7rem' }}><Label text="Title" /><input className="adm-in" placeholder="Project title" value={projForm.title} onChange={e => setProjForm({ ...projForm, title: e.target.value })} /></div>
-                    <div style={{ marginBottom: '0.7rem' }}>
-                      <Label text="Description (supports • bullets and 1. numbered lists)" />
-                      <textarea
-                        className="adm-in"
-                        placeholder={"What will the user build?\n• Use • or - for bullet points\n1. Or numbers for ordered steps"}
-                        value={projForm.description}
-                        onChange={e => setProjForm({ ...projForm, description: e.target.value })}
-                        style={{ resize: 'vertical', minHeight: 90, lineHeight: 1.6 }}
-                      />
-                      <div style={{ fontSize: '0.72rem', color: t.textDim, marginTop: '0.3rem' }}>
-                        Tip: Start lines with <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>•</code> or <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>-</code> for bullets · <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>1.</code> for numbered steps
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: '0.9rem' }}>
-                      <Label text="Exercise URL (optional)" />
-                      <input className="adm-in" placeholder="https://... (link to exercise page)" value={projForm.url} onChange={e => setProjForm({ ...projForm, url: e.target.value })} />
-                    </div>
-                    <button className="bp" onClick={handleAddProject}>+ Add Project</button>
                   </div>
 
-                  {/* Project list */}
-                  <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Projects ({projects.length})</div>
-                  {projects.length === 0
-                    ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No projects yet</div>
-                    : projects.map(p => {
-                      const isExpanded = expandedDescId === p.id
-                      const isLong = (p.description || '').length > DESC_LIMIT
-                      const diff = difficultyConfig[p.difficulty] || difficultyConfig.easy
+                  {/* ── RESOURCES ── */}
+                  {contentTab === 'resources' && (<>
+                    <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
+                      <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Resource</div>
+                      <div className="form-2col">
+                        <div><Label text="Level" /><LevelSelect value={resForm.level_id} onChange={v => setResForm({ ...resForm, level_id: v })} /></div>
+                        <div>
+                          <Label text="Type" />
+                          <select className="adm-in" value={resForm.type} onChange={e => setResForm({ ...resForm, type: e.target.value })}>
+                            <option value="article">📄 Article</option>
+                            <option value="video">🎥 Video</option>
+                            <option value="course">🎓 Course</option>
+                            <option value="tool">🛠️ Tool</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: '0.7rem' }}><Label text="Title" /><input className="adm-in" placeholder="Resource title" value={resForm.title} onChange={e => setResForm({ ...resForm, title: e.target.value })} /></div>
+                      <div style={{ marginBottom: '0.9rem' }}><Label text="URL" /><input className="adm-in" placeholder="https://..." value={resForm.url} onChange={e => setResForm({ ...resForm, url: e.target.value })} /></div>
+                      <button className="bp" onClick={handleAddResource}>+ Add Resource</button>
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Resources ({resources.length})</div>
+                    {resources.length === 0
+                      ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No resources yet</div>
+                      : resources.map(r => (
+                        <div key={r.id} className="row row-res">
+                          {editResId === r.id ? (<>
+                            <input className="adm-in" value={editResForm.title} onChange={e => setEditResForm({ ...editResForm, title: e.target.value })} />
+                            <input className="adm-in" value={editResForm.url} onChange={e => setEditResForm({ ...editResForm, url: e.target.value })} />
+                            <select className="adm-in" value={editResForm.type} onChange={e => setEditResForm({ ...editResForm, type: e.target.value })}>
+                              <option value="article">📄</option><option value="video">🎥</option><option value="course">🎓</option><option value="tool">🛠️</option>
+                            </select>
+                            <div className="row-actions"><SaveBtn onClick={() => handleUpdateResource(r.id)} /><CancelBtn onClick={() => setEditResId(null)} /></div>
+                          </>) : (<>
+                            <div><div style={{ fontSize: '0.87rem', fontWeight: 600, color: t.text }}>{typeIcons[r.type]} {r.title}</div><div style={{ fontSize: '0.73rem', color: t.textDim }}>{r.level_name}</div></div>
+                            <a href={r.url} target="_blank" rel="noreferrer" style={{ fontSize: '0.77rem', color: t.teal, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: '100%' }}>{r.url}</a>
+                            <span style={{ fontSize: '0.7rem', color: t.textDim, textTransform: 'uppercase' }}>{r.type}</span>
+                            <div className="row-actions"><EditBtn onClick={() => { setEditResId(r.id); setEditResForm({ title: r.title, url: r.url, type: r.type }) }} /><DelBtn onClick={() => handleDeleteResource(r.id)} /></div>
+                          </>)}
+                        </div>
+                      ))}
+                  </>)}
 
-                      return (
-                        <div key={p.id} className="proj-card">
-                          {editProjId === p.id ? (
-                            /* ── EDIT MODE ── */
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem' }}>
-                                <div>
-                                  <Label text="Title" />
-                                  <input className="adm-in" value={editProjForm.title} onChange={e => setEditProjForm({ ...editProjForm, title: e.target.value })} />
-                                </div>
-                                <div>
-                                  <Label text="Difficulty" />
-                                  <select className="adm-in" value={editProjForm.difficulty || 'easy'} onChange={e => setEditProjForm({ ...editProjForm, difficulty: e.target.value })}>
-                                    <option value="easy">🟢 Easy</option>
-                                    <option value="intermediate">🟡 Intermediate</option>
-                                    <option value="hard">🔴 Hard</option>
-                                    <option value="challenge">⚡ Challenge</option>
-                                  </select>
-                                </div>
-                              </div>
-                              <div>
-                                <Label text="Description" />
-                                <textarea className="adm-in" value={editProjForm.description} onChange={e => setEditProjForm({ ...editProjForm, description: e.target.value })} style={{ resize: 'vertical', minHeight: 80 }} />
-                              </div>
-                              <div>
-                                <Label text="Exercise URL" />
-                                <input className="adm-in" placeholder="https://..." value={editProjForm.url || ''} onChange={e => setEditProjForm({ ...editProjForm, url: e.target.value })} />
-                              </div>
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <SaveBtn onClick={() => handleUpdateProject(p.id)} />
-                                <CancelBtn onClick={() => setEditProjId(null)} />
-                              </div>
-                            </div>
-                          ) : (
-                            /* ── VIEW MODE ── */
-                            <div>
-                              {/* Top row: title + difficulty badge + actions */}
-                              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.7rem' }}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
-                                    <span style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}>🛠️ {p.title}</span>
-                                    <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: 20, background: diff.bg, border: `1px solid ${diff.border}`, color: diff.color, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                                      {diff.label}
-                                    </span>
+                  {/* ── PROJECTS ── */}
+                  {contentTab === 'projects' && (<>
+                    <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
+                      <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Project</div>
+                      <div className="form-2col">
+                        <div><Label text="Level" /><LevelSelect value={projForm.level_id} onChange={v => setProjForm({ ...projForm, level_id: v })} /></div>
+                        <div>
+                          <Label text="Difficulty" />
+                          <select className="adm-in" value={projForm.difficulty} onChange={e => setProjForm({ ...projForm, difficulty: e.target.value })}>
+                            <option value="easy">🟢 Easy</option>
+                            <option value="intermediate">🟡 Intermediate</option>
+                            <option value="hard">🔴 Hard</option>
+                            <option value="challenge">⚡ Challenge</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: '0.7rem' }}><Label text="Title" /><input className="adm-in" placeholder="Project title" value={projForm.title} onChange={e => setProjForm({ ...projForm, title: e.target.value })} /></div>
+                      <div style={{ marginBottom: '0.7rem' }}>
+                        <Label text="Description (supports • bullets and 1. numbered lists)" />
+                        <textarea className="adm-in" placeholder={"What will the user build?\n• Use • or - for bullet points\n1. Or numbers for ordered steps"} value={projForm.description} onChange={e => setProjForm({ ...projForm, description: e.target.value })} style={{ resize: 'vertical', minHeight: 90, lineHeight: 1.6 }} />
+                        <div style={{ fontSize: '0.72rem', color: t.textDim, marginTop: '0.3rem' }}>
+                          Tip: Start lines with <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>•</code> or <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>-</code> for bullets · <code style={{ background: t.tealDim, padding: '0 4px', borderRadius: 3 }}>1.</code> for numbered steps
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: '0.9rem' }}>
+                        <Label text="Exercise URL (optional)" />
+                        <input className="adm-in" placeholder="https://..." value={projForm.url} onChange={e => setProjForm({ ...projForm, url: e.target.value })} />
+                      </div>
+                      <button className="bp" onClick={handleAddProject}>+ Add Project</button>
+                    </div>
+
+                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Projects ({projects.length})</div>
+                    {projects.length === 0
+                      ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No projects yet</div>
+                      : projects.map(p => {
+                        const isExpanded = expandedDescId === p.id
+                        const isLong = (p.description || '').length > DESC_LIMIT
+                        const diff = difficultyConfig[p.difficulty] || difficultyConfig.easy
+
+                        return (
+                          <div key={p.id} className="proj-card">
+                            {editProjId === p.id ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                                <div className="form-2col">
+                                  <div><Label text="Title" /><input className="adm-in" value={editProjForm.title} onChange={e => setEditProjForm({ ...editProjForm, title: e.target.value })} /></div>
+                                  <div>
+                                    <Label text="Difficulty" />
+                                    <select className="adm-in" value={editProjForm.difficulty || 'easy'} onChange={e => setEditProjForm({ ...editProjForm, difficulty: e.target.value })}>
+                                      <option value="easy">🟢 Easy</option>
+                                      <option value="intermediate">🟡 Intermediate</option>
+                                      <option value="hard">🔴 Hard</option>
+                                      <option value="challenge">⚡ Challenge</option>
+                                    </select>
                                   </div>
-                                  <div style={{ fontSize: '0.73rem', color: t.textDim }}>{p.level_name}</div>
                                 </div>
-                                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, marginTop: '0.1rem' }}>
-                                  <EditBtn onClick={() => { setEditProjId(p.id); setEditProjForm({ title: p.title, description: p.description || '', url: p.url || '', difficulty: p.difficulty || 'easy' }) }} />
-                                  <DelBtn onClick={() => handleDeleteProject(p.id)} />
-                                </div>
+                                <div><Label text="Description" /><textarea className="adm-in" value={editProjForm.description} onChange={e => setEditProjForm({ ...editProjForm, description: e.target.value })} style={{ resize: 'vertical', minHeight: 80 }} /></div>
+                                <div><Label text="Exercise URL" /><input className="adm-in" placeholder="https://..." value={editProjForm.url || ''} onChange={e => setEditProjForm({ ...editProjForm, url: e.target.value })} /></div>
+                                <div className="row-actions"><SaveBtn onClick={() => handleUpdateProject(p.id)} /><CancelBtn onClick={() => setEditProjId(null)} /></div>
                               </div>
-
-                              {/* Exercise URL link */}
-                              {p.url && (
-                                <div style={{ marginTop: '0.45rem' }}>
-                                  <a
-                                    href={p.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: t.teal, textDecoration: 'none', padding: '0.2rem 0.6rem', borderRadius: 5, border: `1px solid ${t.tealBorder}`, background: t.tealDim, transition: 'all 0.2s' }}
-                                    onMouseEnter={e => e.currentTarget.style.borderColor = t.teal}
-                                    onMouseLeave={e => e.currentTarget.style.borderColor = t.tealBorder}
-                                  >
-                                    🔗 Exercise Page
-                                  </a>
+                            ) : (
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.7rem', flexWrap: 'wrap' }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                                      <span style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}>🛠️ {p.title}</span>
+                                      <span style={{ fontSize: '0.7rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: 20, background: diff.bg, border: `1px solid ${diff.border}`, color: diff.color, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>{diff.label}</span>
+                                    </div>
+                                    <div style={{ fontSize: '0.73rem', color: t.textDim }}>{p.level_name}</div>
+                                  </div>
+                                  <div className="row-actions" style={{ flexShrink: 0 }}>
+                                    <EditBtn onClick={() => { setEditProjId(p.id); setEditProjForm({ title: p.title, description: p.description || '', url: p.url || '', difficulty: p.difficulty || 'easy' }) }} />
+                                    <DelBtn onClick={() => handleDeleteProject(p.id)} />
+                                  </div>
                                 </div>
-                              )}
-
-                              {/* Description with collapse/expand */}
-                              {p.description && (
-                                <div style={{ marginTop: '0.55rem' }}>
-                                  {isLong ? (
-                                    <>
-                                      <button
-                                        className="desc-toggle"
-                                        onClick={() => setExpandedDescId(isExpanded ? null : p.id)}
-                                      >
+                                {p.url && (
+                                  <div style={{ marginTop: '0.45rem' }}>
+                                    <a href={p.url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: t.teal, textDecoration: 'none', padding: '0.2rem 0.6rem', borderRadius: 5, border: `1px solid ${t.tealBorder}`, background: t.tealDim, transition: 'all 0.2s' }}
+                                      onMouseEnter={e => e.currentTarget.style.borderColor = t.teal}
+                                      onMouseLeave={e => e.currentTarget.style.borderColor = t.tealBorder}
+                                    >🔗 Exercise Page</a>
+                                  </div>
+                                )}
+                                {p.description && (
+                                  <div style={{ marginTop: '0.55rem' }}>
+                                    {isLong ? (<>
+                                      <button className="desc-toggle" onClick={() => setExpandedDescId(isExpanded ? null : p.id)}>
                                         <span className={`desc-arrow ${isExpanded ? 'open' : ''}`}>▼</span>
                                         {isExpanded ? 'Hide description' : 'Show description'}
                                       </button>
                                       <div className={`desc-body ${isExpanded ? 'expanded' : 'collapsed'}`}>
                                         <DescriptionRenderer text={p.description} t={t} />
                                       </div>
-                                    </>
-                                  ) : (
-                                    <DescriptionRenderer text={p.description} t={t} />
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                </>)}
+                                    </>) : (<DescriptionRenderer text={p.description} t={t} />)}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                  </>)}
 
-                {/* ── CERTIFICATES ── */}
-                {contentTab === 'certificates' && (<>
-                  <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
-                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Certificate</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
-                      <div><Label text="Level" /><LevelSelect value={certForm.level_id} onChange={v => setCertForm({ ...certForm, level_id: v })} /></div>
-                      <div><Label text="Provider" /><input className="adm-in" placeholder="e.g. CompTIA" value={certForm.provider} onChange={e => setCertForm({ ...certForm, provider: e.target.value })} /></div>
-                    </div>
-                    <div style={{ marginBottom: '0.7rem' }}><Label text="Certificate Name" /><input className="adm-in" placeholder="e.g. CompTIA Security+" value={certForm.name} onChange={e => setCertForm({ ...certForm, name: e.target.value })} /></div>
-                    <div style={{ marginBottom: '0.9rem' }}><Label text="URL" /><input className="adm-in" placeholder="https://..." value={certForm.url} onChange={e => setCertForm({ ...certForm, url: e.target.value })} /></div>
-                    <button className="bp" onClick={handleAddCert}>+ Add Certificate</button>
-                  </div>
-                  <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Certificates ({certs.length})</div>
-                  {certs.length === 0 ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No certificates yet</div>
-                    : certs.map(c => (
-                      <div key={c.id} className="row row-cert">
-                        {editCertId === c.id ? (<>
-                          <input className="adm-in" value={editCertForm.name} onChange={e => setEditCertForm({ ...editCertForm, name: e.target.value })} />
-                          <input className="adm-in" value={editCertForm.provider} onChange={e => setEditCertForm({ ...editCertForm, provider: e.target.value })} />
-                          <input className="adm-in" value={editCertForm.url} onChange={e => setEditCertForm({ ...editCertForm, url: e.target.value })} />
-                          <SaveBtn onClick={() => handleUpdateCert(c.id)} />
-                          <CancelBtn onClick={() => setEditCertId(null)} />
-                        </>) : (<>
-                          <div><div style={{ fontSize: '0.87rem', fontWeight: 600, color: t.text }}>🏆 {c.name}</div><div style={{ fontSize: '0.73rem', color: t.textDim }}>{c.level_name}</div></div>
-                          <span style={{ fontSize: '0.82rem', color: t.textDim }}>{c.provider}</span>
-                          <a href={c.url} target="_blank" rel="noreferrer" style={{ fontSize: '0.77rem', color: t.teal, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.url}</a>
-                          <EditBtn onClick={() => { setEditCertId(c.id); setEditCertForm({ name: c.name, provider: c.provider, url: c.url }) }} />
-                          <DelBtn onClick={() => handleDeleteCert(c.id)} />
-                        </>)}
+                  {/* ── CERTIFICATES ── */}
+                  {contentTab === 'certificates' && (<>
+                    <div style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.1rem' }}>
+                      <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem', fontFamily: "'Orbitron',monospace" }}>Add Certificate</div>
+                      <div className="form-2col">
+                        <div><Label text="Level" /><LevelSelect value={certForm.level_id} onChange={v => setCertForm({ ...certForm, level_id: v })} /></div>
+                        <div><Label text="Provider" /><input className="adm-in" placeholder="e.g. CompTIA" value={certForm.provider} onChange={e => setCertForm({ ...certForm, provider: e.target.value })} /></div>
                       </div>
-                    ))}
+                      <div style={{ marginBottom: '0.7rem' }}><Label text="Certificate Name" /><input className="adm-in" placeholder="e.g. CompTIA Security+" value={certForm.name} onChange={e => setCertForm({ ...certForm, name: e.target.value })} /></div>
+                      <div style={{ marginBottom: '0.9rem' }}><Label text="URL" /><input className="adm-in" placeholder="https://..." value={certForm.url} onChange={e => setCertForm({ ...certForm, url: e.target.value })} /></div>
+                      <button className="bp" onClick={handleAddCert}>+ Add Certificate</button>
+                    </div>
+                    <div style={{ fontSize: '0.68rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.7rem', fontFamily: "'Orbitron',monospace" }}>Certificates ({certs.length})</div>
+                    {certs.length === 0
+                      ? <div style={{ textAlign: 'center', color: t.textDim, padding: '1.5rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 10 }}>No certificates yet</div>
+                      : certs.map(c => (
+                        <div key={c.id} className="row row-cert">
+                          {editCertId === c.id ? (<>
+                            <input className="adm-in" value={editCertForm.name} onChange={e => setEditCertForm({ ...editCertForm, name: e.target.value })} />
+                            <input className="adm-in" value={editCertForm.provider} onChange={e => setEditCertForm({ ...editCertForm, provider: e.target.value })} />
+                            <input className="adm-in" value={editCertForm.url} onChange={e => setEditCertForm({ ...editCertForm, url: e.target.value })} />
+                            <div className="row-actions"><SaveBtn onClick={() => handleUpdateCert(c.id)} /><CancelBtn onClick={() => setEditCertId(null)} /></div>
+                          </>) : (<>
+                            <div><div style={{ fontSize: '0.87rem', fontWeight: 600, color: t.text }}>🏆 {c.name}</div><div style={{ fontSize: '0.73rem', color: t.textDim }}>{c.level_name}</div></div>
+                            <span style={{ fontSize: '0.82rem', color: t.textDim }}>{c.provider}</span>
+                            <a href={c.url} target="_blank" rel="noreferrer" style={{ fontSize: '0.77rem', color: t.teal, textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', maxWidth: '100%' }}>{c.url}</a>
+                            <div className="row-actions"><EditBtn onClick={() => { setEditCertId(c.id); setEditCertForm({ name: c.name, provider: c.provider, url: c.url }) }} /><DelBtn onClick={() => handleDeleteCert(c.id)} /></div>
+                          </>)}
+                        </div>
+                      ))}
+                  </>)}
                 </>)}
-              </>)}
+              </div>
             </div>
           </div>
         )}
@@ -637,9 +665,9 @@ export default function Admin() {
             {[...blueSpecs, ...redSpecs].map(s => (
               <div key={s.id} style={{ background: t.card, border: `1px solid ${t.tealBorder}`, borderRadius: 9, padding: '0.8rem 1.1rem', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: s.isBlue ? blueColor : redColor, flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '0.88rem', fontWeight: 600, color: t.text }}>{s.name}</div>
-                  <div style={{ fontSize: '0.72rem', color: t.textDim }}>{s.team} · /{s.slug}</div>
+                  <div style={{ fontSize: '0.72rem', color: t.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{s.team} · /{s.slug}</div>
                 </div>
               </div>
             ))}
@@ -649,7 +677,7 @@ export default function Admin() {
         {/* ── QUESTIONS ── */}
         {activeTab === 'questions' && (
           <div style={{ animation: 'fadeUp 0.4s ease both' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.3rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.3rem', gap: '0.5rem', flexWrap: 'wrap' }}>
               <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.72rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase' }}>Questions ({questions.length})</div>
               <button className="bp" onClick={() => setShowAddQ(!showAddQ)}>{showAddQ ? 'Cancel' : '+ Add Question'}</button>
             </div>
@@ -657,10 +685,12 @@ export default function Admin() {
               <div style={{ background: t.card, border: `1px solid ${t.teal}`, borderRadius: 12, padding: '1.4rem', marginBottom: '1.3rem', animation: 'fadeUp 0.3s ease both' }}>
                 <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.68rem', color: t.teal, letterSpacing: '2px', marginBottom: '0.9rem' }}>NEW QUESTION</div>
                 <div style={{ marginBottom: '0.8rem' }}><Label text="Question" /><input className="adm-in" placeholder="Question text..." value={newQ.question_text} onChange={e => setNewQ({ ...newQ, question_text: e.target.value })} /></div>
-                {['a', 'b', 'c', 'd'].map(opt => (
-                  <div key={opt} style={{ marginBottom: '0.6rem' }}><Label text={`Option ${opt.toUpperCase()}`} /><input className="adm-in" placeholder={`Option ${opt.toUpperCase()}...`} value={newQ[`option_${opt}`]} onChange={e => setNewQ({ ...newQ, [`option_${opt}`]: e.target.value })} /></div>
-                ))}
-                <div style={{ marginBottom: '0.9rem' }}><Label text="Order Index" /><input className="adm-in" type="number" placeholder="e.g. 13" value={newQ.order_index} onChange={e => setNewQ({ ...newQ, order_index: e.target.value })} style={{ width: 120 }} /></div>
+                <div className="q-opts" style={{ marginBottom: '0.6rem' }}>
+                  {['a', 'b', 'c', 'd'].map(opt => (
+                    <div key={opt}><Label text={`Option ${opt.toUpperCase()}`} /><input className="adm-in" placeholder={`Option ${opt.toUpperCase()}...`} value={newQ[`option_${opt}`]} onChange={e => setNewQ({ ...newQ, [`option_${opt}`]: e.target.value })} /></div>
+                  ))}
+                </div>
+                <div style={{ marginBottom: '0.9rem' }}><Label text="Order Index" /><input className="adm-in" type="number" placeholder="e.g. 13" value={newQ.order_index} onChange={e => setNewQ({ ...newQ, order_index: e.target.value })} style={{ maxWidth: 140 }} /></div>
                 <button className="bp" onClick={handleAddQuestion}>Save Question</button>
               </div>
             )}
@@ -670,20 +700,19 @@ export default function Admin() {
                   <div>
                     <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.68rem', color: t.teal, marginBottom: '0.8rem' }}>EDITING Q{i + 1}</div>
                     <div style={{ marginBottom: '0.7rem' }}><Label text="Question" /><input className="adm-in" value={editQForm.question_text} onChange={e => setEditQForm({ ...editQForm, question_text: e.target.value })} /></div>
-                    {['a', 'b', 'c', 'd'].map(opt => (
-                      <div key={opt} style={{ marginBottom: '0.55rem' }}><Label text={`Option ${opt.toUpperCase()}`} /><input className="adm-in" value={editQForm[`option_${opt}`]} onChange={e => setEditQForm({ ...editQForm, [`option_${opt}`]: e.target.value })} /></div>
-                    ))}
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.9rem' }}>
-                      <SaveBtn onClick={() => handleUpdateQuestion(q.id)} />
-                      <CancelBtn onClick={() => setEditQId(null)} />
+                    <div className="q-opts" style={{ marginBottom: '0.55rem' }}>
+                      {['a', 'b', 'c', 'd'].map(opt => (
+                        <div key={opt}><Label text={`Option ${opt.toUpperCase()}`} /><input className="adm-in" value={editQForm[`option_${opt}`]} onChange={e => setEditQForm({ ...editQForm, [`option_${opt}`]: e.target.value })} /></div>
+                      ))}
                     </div>
+                    <div className="row-actions" style={{ marginTop: '0.9rem' }}><SaveBtn onClick={() => handleUpdateQuestion(q.id)} /><CancelBtn onClick={() => setEditQId(null)} /></div>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                    <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: '0.68rem', color: t.teal, fontFamily: "'Orbitron',monospace", letterSpacing: '2px', marginBottom: '0.45rem' }}>Q{i + 1}</div>
                       <div style={{ fontSize: '0.93rem', fontWeight: 600, color: t.text, marginBottom: '0.7rem' }}>{q.question_text}</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem' }}>
+                      <div className="q-opts">
                         {['A', 'B', 'C', 'D'].map(opt => (
                           <div key={opt} style={{ fontSize: '0.8rem', color: t.textDim, background: t.tealDim, padding: '0.35rem 0.7rem', borderRadius: 6 }}>
                             <span style={{ color: t.teal, fontWeight: 700, marginRight: '0.3rem' }}>{opt}.</span>{q[`option_${opt.toLowerCase()}`]}
@@ -694,7 +723,7 @@ export default function Admin() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0 }}>
+                    <div className="row-actions" style={{ flexShrink: 0 }}>
                       <EditBtn onClick={() => { setEditQId(q.id); setEditQForm({ question_text: q.question_text, option_a: q.option_a, option_b: q.option_b, option_c: q.option_c, option_d: q.option_d }) }} />
                       <DelBtn onClick={() => handleDeleteQuestion(q.id)} />
                     </div>
@@ -709,14 +738,25 @@ export default function Admin() {
         {activeTab === 'users' && (
           <div style={{ animation: 'fadeUp 0.4s ease both' }}>
             <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.72rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.9rem' }}>All Users ({users.length})</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 2fr 1.5fr 1.5fr 1fr', gap: '0.7rem', padding: '0.5rem 1.1rem', marginBottom: '0.4rem' }}>
+
+            {/* Desktop header — hidden on mobile */}
+            <div style={{ display: 'none' }} className="u-header">
               {['Username', 'Email', 'Career Path', 'Joined', 'Last Login'].map(h => (
                 <div key={h} style={{ fontSize: '0.7rem', color: t.textDim, textTransform: 'uppercase', letterSpacing: '1px', fontFamily: "'Orbitron',monospace" }}>{h}</div>
               ))}
             </div>
-            {users.length === 0 ? <div style={{ textAlign: 'center', color: t.textDim, padding: '3rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>No users yet</div>
+
+            <style>{`
+              @media(min-width:860px){
+                .u-header{display:grid !important;grid-template-columns:1.5fr 2fr 1.5fr 1.5fr 1fr;gap:0.7rem;padding:0.5rem 1.1rem;margin-bottom:0.4rem}
+              }
+            `}</style>
+
+            {users.length === 0
+              ? <div style={{ textAlign: 'center', color: t.textDim, padding: '3rem', border: `1px dashed ${t.tealBorder}`, borderRadius: 12 }}>No users yet</div>
               : users.map(u => (
                 <div key={u.id} className="u-row">
+                  {/* User avatar + name — always visible */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                     <div style={{ width: 28, height: 28, borderRadius: '50%', background: t.tealDim, border: `1px solid ${t.tealBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', color: t.teal, fontWeight: 700, flexShrink: 0 }}>
                       {u.username?.charAt(0).toUpperCase()}
@@ -726,10 +766,13 @@ export default function Admin() {
                       <div style={{ fontSize: '0.7rem', color: u.role === 'admin' ? '#f6ad55' : t.textDim }}>{u.role}</div>
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: t.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
-                  <div style={{ fontSize: '0.8rem', color: u.recommended_path ? t.teal : t.textDim }}>{u.recommended_path || 'Not set'}</div>
-                  <div style={{ fontSize: '0.8rem', color: t.textDim }}>{fmtDate(u.created_at)}</div>
-                  <div style={{ fontSize: '0.8rem', color: t.textDim }}>{fmtDate(u.last_login)}</div>
+                  {/* Additional fields — stacked on mobile, grid cells on desktop */}
+                  <div className="u-row-meta">
+                    <span style={{ fontSize: '0.8rem', color: t.textDim, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{u.email}</span>
+                    <span style={{ fontSize: '0.8rem', color: u.recommended_path ? t.teal : t.textDim }}>{u.recommended_path || 'Not set'}</span>
+                    <span style={{ fontSize: '0.8rem', color: t.textDim }}>{fmtDate(u.created_at)}</span>
+                    <span style={{ fontSize: '0.8rem', color: t.textDim }}>{fmtDate(u.last_login)}</span>
+                  </div>
                 </div>
               ))}
           </div>
@@ -739,10 +782,9 @@ export default function Admin() {
   )
 }
 
-// ── Description renderer: parses • / - / * bullets and 1. numbered lists ──
+// ── Description renderer ──
 function DescriptionRenderer({ text, t }) {
   if (!text) return null
-
   const lines = text.split('\n').filter(l => l.trim() !== '')
   const elements = []
   let ulBuffer = []
@@ -750,24 +792,12 @@ function DescriptionRenderer({ text, t }) {
 
   const flushUl = () => {
     if (!ulBuffer.length) return
-    elements.push(
-      <ul key={`ul-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>
-        {ulBuffer.map((item, i) => (
-          <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>
-        ))}
-      </ul>
-    )
+    elements.push(<ul key={`ul-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>{ulBuffer.map((item, i) => <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>)}</ul>)
     ulBuffer = []
   }
   const flushOl = () => {
     if (!olBuffer.length) return
-    elements.push(
-      <ol key={`ol-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>
-        {olBuffer.map((item, i) => (
-          <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>
-        ))}
-      </ol>
-    )
+    elements.push(<ol key={`ol-${elements.length}`} style={{ paddingLeft: '1.4rem', margin: '0.3rem 0' }}>{olBuffer.map((item, i) => <li key={i} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.2rem', lineHeight: 1.55 }}>{item}</li>)}</ol>)
     olBuffer = []
   }
 
@@ -775,19 +805,9 @@ function DescriptionRenderer({ text, t }) {
     const trimmed = line.trim()
     const isBullet = /^[•\-*]\s/.test(trimmed)
     const isNumbered = /^\d+[\.\)]\s/.test(trimmed)
-
-    if (isBullet) {
-      flushOl()
-      ulBuffer.push(trimmed.replace(/^[•\-*]\s+/, ''))
-    } else if (isNumbered) {
-      flushUl()
-      olBuffer.push(trimmed.replace(/^\d+[\.\)]\s+/, ''))
-    } else {
-      flushUl(); flushOl()
-      elements.push(
-        <p key={`p-${i}`} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.25rem', lineHeight: 1.6 }}>{trimmed}</p>
-      )
-    }
+    if (isBullet) { flushOl(); ulBuffer.push(trimmed.replace(/^[•\-*]\s+/, '')) }
+    else if (isNumbered) { flushUl(); olBuffer.push(trimmed.replace(/^\d+[\.\)]\s+/, '')) }
+    else { flushUl(); flushOl(); elements.push(<p key={`p-${i}`} style={{ fontSize: '0.83rem', color: t.textDim, marginBottom: '0.25rem', lineHeight: 1.6 }}>{trimmed}</p>) }
   })
 
   flushUl(); flushOl()
