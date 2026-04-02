@@ -56,14 +56,25 @@ export default function Result() {
         @keyframes glowPulse{0%,100%{box-shadow:0 0 20px ${t.tealDim}}50%{box-shadow:0 0 50px ${t.tealMid}}}
         @keyframes scaleIn{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
         @keyframes countUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes fillBar{from{width:0%}to{width:var(--w)}}
-        .trait-badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.4rem 1rem;border-radius:50px;border:1px solid ${t.tealBorder};background:${t.tealDim};font-size:0.85rem;color:${t.teal};font-weight:500}
-        .explore-btn{background:${t.teal};border:none;color:${t.bg};font-family:'Orbitron',monospace;font-size:0.9rem;font-weight:700;cursor:pointer;padding:1rem 3rem;border-radius:8px;letter-spacing:2px;transition:all 0.3s;animation:glowPulse 2s ease-in-out infinite}
+
+        .trait-badge{display:inline-flex;align-items:center;gap:0.4rem;padding:0.35rem 0.9rem;border-radius:50px;border:1px solid ${t.tealBorder};background:${t.tealDim};font-size:0.82rem;color:${t.teal};font-weight:500}
+
+        .explore-btn{background:${t.teal};border:none;color:${t.bg};font-family:'Orbitron',monospace;font-size:clamp(0.78rem,2vw,0.9rem);font-weight:700;cursor:pointer;padding:1rem 2rem;border-radius:8px;letter-spacing:2px;transition:all 0.3s;animation:glowPulse 2s ease-in-out infinite;width:100%;max-width:400px}
         .explore-btn:hover{opacity:0.9;transform:translateY(-3px);box-shadow:0 10px 30px ${t.tealMid}}
-        .retry-btn{background:none;border:1px solid ${t.tealBorder};color:${t.textDim};font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;padding:0.7rem 2rem;border-radius:8px;transition:all 0.2s;letter-spacing:1px}
+
+        .retry-btn{background:none;border:1px solid ${t.tealBorder};color:${t.textDim};font-family:'Rajdhani',sans-serif;font-size:0.9rem;font-weight:500;cursor:pointer;padding:0.7rem 2rem;border-radius:8px;transition:all 0.2s;letter-spacing:1px;width:100%;max-width:400px}
         .retry-btn:hover{border-color:${t.tealMid};color:${t.text}}
+
         .alt-card{background:${t.card};border:1px solid ${t.tealBorder};border-radius:10px;padding:0.9rem 1.2rem;cursor:pointer;transition:all 0.2s;text-align:left;display:flex;align-items:center;gap:0.8rem}
         .alt-card:hover{border-color:${t.tealMid};transform:translateX(4px)}
+
+        /* ── Responsive ── */
+        @media(max-width: 600px) {
+          .result-main { padding: 5rem 1.2rem 3rem !important; }
+          .result-card { padding: 1.4rem !important; }
+          .team-badges { flex-direction: column !important; align-items: center !important; }
+          .alt-card:hover { transform: none; }
+        }
       `}</style>
 
       {particles.map(p => (<div key={p.id} style={{ position: 'fixed', left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, borderRadius: '50%', background: darkMode ? 'rgba(100,255,218,0.4)' : 'rgba(13,115,119,0.15)', animation: `floatUp ${p.duration}s ease-in-out ${p.delay}s infinite`, pointerEvents: 'none', zIndex: 0 }} />))}
@@ -75,7 +86,7 @@ export default function Result() {
 
       <Navbar />
 
-      <main style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 2rem 4rem' }}>
+      <main className="result-main" style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '6rem 1.5rem 4rem' }}>
         {result && (
           <div style={{ width: '100%', maxWidth: 700, textAlign: 'center' }}>
 
@@ -87,26 +98,22 @@ export default function Result() {
               </div>
             </div>
 
-            {/* Subtitle */}
-            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1rem,2.5vw,1.5rem)', fontWeight: 700, color: t.textDim, marginBottom: '0.5rem', animation: visible ? 'fadeSlideUp 0.6s ease 0.1s both' : 'none' }}>
+            <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(0.9rem, 2.5vw, 1.5rem)', fontWeight: 700, color: t.textDim, marginBottom: '0.5rem', animation: visible ? 'fadeSlideUp 0.6s ease 0.1s both' : 'none' }}>
               Your ideal career path is
             </h1>
 
-            {/* Career name */}
             <div style={{ animation: visible ? 'scaleIn 0.7s cubic-bezier(0.175,0.885,0.32,1.275) 0.2s both' : 'none', margin: '1rem 0 1.5rem' }}>
-              <h2 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.8rem,5vw,3rem)', fontWeight: 900, color: t.teal, lineHeight: 1.1, textShadow: darkMode ? `0 0 40px ${t.tealMid}` : 'none' }}>
+              <h2 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.4rem, 5vw, 3rem)', fontWeight: 900, color: t.teal, lineHeight: 1.1, textShadow: darkMode ? `0 0 40px ${t.tealMid}` : 'none' }}>
                 {result.recommended_path}
               </h2>
             </div>
 
-            {/* Team badge */}
-            <div style={{ animation: visible ? 'fadeSlideUp 0.6s ease 0.3s both' : 'none', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            {/* Team + confidence badges */}
+            <div className="team-badges" style={{ animation: visible ? 'fadeSlideUp 0.6s ease 0.3s both' : 'none', marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.8rem', background: teamColorDim, border: `1px solid ${teamColorBorder}`, borderRadius: 50, padding: '0.5rem 1.5rem' }}>
                 <span style={{ fontSize: '1.2rem' }}>{teamIcon}</span>
                 <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.85rem', fontWeight: 700, color: teamColor, letterSpacing: '1px' }}>{result.team}</span>
               </div>
-
-              {/* Confidence badge */}
               {result.confidence && (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: `${confidenceColor(result.confidence)}15`, border: `1px solid ${confidenceColor(result.confidence)}40`, borderRadius: 50, padding: '0.5rem 1.2rem' }}>
                   <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.85rem', fontWeight: 700, color: confidenceColor(result.confidence) }}>
@@ -117,16 +124,16 @@ export default function Result() {
             </div>
 
             {/* Main result card */}
-            <div style={{ background: t.card, border: `1px solid ${teamColorBorder}`, borderRadius: 20, padding: '2rem', backdropFilter: 'blur(12px)', marginBottom: '1.5rem', position: 'relative', overflow: 'hidden', animation: visible ? 'fadeSlideUp 0.6s ease 0.4s both' : 'none', transition: 'all 0.3s' }}>
+            <div className="result-card" style={{ background: t.card, border: `1px solid ${teamColorBorder}`, borderRadius: 20, padding: '2rem', backdropFilter: 'blur(12px)', marginBottom: '1.5rem', position: 'relative', overflow: 'hidden', animation: visible ? 'fadeSlideUp 0.6s ease 0.4s both' : 'none', transition: 'all 0.3s' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg,transparent,${teamColor},transparent)` }} />
 
               {/* Why this path */}
               <div style={{ marginBottom: '1.8rem', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem' }}>
                   <div style={{ width: 3, height: 20, background: t.teal, borderRadius: 2 }} />
-                  <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.75rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Why this path</span>
+                  <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.72rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Why this path</span>
                 </div>
-                <p style={{ fontSize: '1rem', color: t.textDim, lineHeight: 1.8 }}>{result.reason}</p>
+                <p style={{ fontSize: 'clamp(0.88rem, 1.5vw, 1rem)', color: t.textDim, lineHeight: 1.8 }}>{result.reason}</p>
               </div>
 
               {/* Key traits */}
@@ -134,9 +141,9 @@ export default function Result() {
                 <div style={{ marginBottom: '1.5rem', textAlign: 'left' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem' }}>
                     <div style={{ width: 3, height: 20, background: t.teal, borderRadius: 2 }} />
-                    <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.75rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Your key traits</span>
+                    <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.72rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Your key traits</span>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {result.key_traits.map((trait, i) => (
                       <div key={i} className="trait-badge" style={{ animation: visible ? `countUp 0.4s ease ${0.5 + i * 0.1}s both` : 'none' }}>✦ {trait}</div>
                     ))}
@@ -149,7 +156,7 @@ export default function Result() {
                 <div style={{ textAlign: 'left' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem' }}>
                     <div style={{ width: 3, height: 20, background: t.teal, borderRadius: 2 }} />
-                    <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.75rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Your trait scores</span>
+                    <span style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.72rem', letterSpacing: '2px', color: t.teal, textTransform: 'uppercase' }}>Your trait scores</span>
                   </div>
                   {Object.entries(result.traits)
                     .sort((a, b) => b[1] - a[1])
@@ -176,9 +183,7 @@ export default function Result() {
             {/* Alternative careers */}
             {result.alternatives?.length > 0 && (
               <div style={{ animation: visible ? 'fadeSlideUp 0.6s ease 0.5s both' : 'none', marginBottom: '1.5rem', textAlign: 'left' }}>
-                <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: "'Orbitron',monospace", marginBottom: '0.8rem' }}>
-                  Also consider
-                </div>
+                <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', fontFamily: "'Orbitron',monospace", marginBottom: '0.8rem' }}>Also consider</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {result.alternatives.filter(Boolean).map((alt, i) => (
                     <div key={i} className="alt-card" onClick={() => navigate(`/specialist/${getSlug(alt)}`)}>

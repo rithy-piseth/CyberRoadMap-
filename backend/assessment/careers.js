@@ -27,7 +27,7 @@ const CAREER_TEAMS = {
   'Digital Forensics Analyst': 'Blue Team',
   'Penetration Tester': 'Red Team',
   'OSINT Analyst': 'Red Team',
-  'Malware Analyst': 'Red Team',
+  'Malware Analyst': 'Blue Team',
   'Web Application Hacker': 'Red Team',
   'Social Engineer': 'Red Team',
   'Exploit Developer': 'Red Team',
