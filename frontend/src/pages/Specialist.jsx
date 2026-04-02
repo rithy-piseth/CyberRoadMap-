@@ -38,7 +38,6 @@ export default function Specialist() {
         setLevels(res.data.levels)
         setLoading(false)
         setTimeout(() => setLoaded(true), 100)
-
         if (res.data.levels.length > 0) {
           loadLevelContent(res.data.levels[0].id)
         }
@@ -111,13 +110,36 @@ export default function Specialist() {
         .proj-arrow.open { transform: rotate(180deg); opacity: 1; }
 
         .proj-row {
-          display: flex; align-items: center; gap: 1rem;
-          padding: 1.2rem 1.4rem;
+          display: flex; align-items: flex-start; gap: 0.75rem;
+          padding: 1rem 1.1rem;
           transition: background 0.2s;
           border-radius: 12px 12px 0 0;
+          flex-wrap: wrap;
+        }
+        @media(min-width:600px){
+          .proj-row { align-items: center; flex-wrap: nowrap; padding: 1.2rem 1.4rem; }
         }
         .proj-row.clickable { cursor: pointer; }
         .proj-row.clickable:hover { background: ${t.tealDim}; }
+
+        /* Right-side controls wrap on small screens */
+        .proj-controls {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          flex-wrap: wrap;
+          flex-shrink: 0;
+          width: 100%;
+          padding-left: calc(36px + 0.75rem); /* align under title */
+        }
+        @media(min-width:600px){
+          .proj-controls {
+            width: auto;
+            padding-left: 0;
+            flex-wrap: nowrap;
+            margin-left: auto;
+          }
+        }
 
         .proj-card {
           border-radius: 12px;
@@ -151,6 +173,17 @@ export default function Specialist() {
         }
         .exercise-btn .btn-icon { font-size: 0.7rem; }
 
+        /* Level buttons scroll horizontally on mobile */
+        .level-scroll {
+          display: flex;
+          gap: 0.6rem;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+          padding-bottom: 4px;
+        }
+        .level-scroll::-webkit-scrollbar { display: none; }
+
         .level-btn {
           display: flex; align-items: center; gap: 0.6rem;
           padding: 0.7rem 1.2rem; border-radius: 50px;
@@ -159,39 +192,90 @@ export default function Specialist() {
           font-family: 'Rajdhani', sans-serif;
           font-size: 0.9rem; font-weight: 600;
           color: ${t.textDim}; transition: all 0.2s;
-          white-space: nowrap;
+          white-space: nowrap; flex-shrink: 0;
         }
         .level-btn:hover { border-color: ${t.tealMid}; color: ${t.text}; }
         .level-btn.active { background: ${t.tealDim}; border-color: ${t.teal}; color: ${t.teal}; }
 
+        /* Tab bar scrolls on mobile */
+        .tab-bar {
+          display: flex;
+          gap: 0.5rem;
+          border-bottom: 1px solid ${t.tealBorder};
+          margin-bottom: 1.5rem;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none;
+        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+
         .tab-btn {
           display: flex; align-items: center; gap: 0.5rem;
-          padding: 0.7rem 1.5rem; border-radius: 8px;
+          padding: 0.7rem 1.2rem; border-radius: 8px;
           border: none; background: none; cursor: pointer;
           font-family: 'Rajdhani', sans-serif;
-          font-size: 0.95rem; font-weight: 600;
+          font-size: 0.92rem; font-weight: 600;
           color: ${t.textDim}; transition: all 0.2s;
           letter-spacing: 0.5px;
           border-bottom: 2px solid transparent;
+          white-space: nowrap; flex-shrink: 0;
         }
         .tab-btn:hover { color: ${t.text}; }
         .tab-btn.active { color: ${t.teal}; border-bottom-color: ${t.teal}; }
 
         .resource-link {
           text-decoration: none; display: flex; align-items: flex-start;
-          gap: 1rem; padding: 1.2rem 1.4rem; border-radius: 12px;
+          gap: 1rem; padding: 1rem 1.2rem; border-radius: 12px;
           border: 1px solid ${t.tealBorder}; background: ${t.card};
           transition: all 0.25s; margin-bottom: 0.8rem; color: inherit;
+        }
+        @media(min-width:500px){
+          .resource-link { padding: 1.2rem 1.4rem; align-items: center; }
         }
         .resource-link:hover { border-color: ${t.teal}; transform: translateX(4px); box-shadow: 0 4px 20px ${t.tealDim}; }
 
         .cert-link {
           text-decoration: none; display: flex; align-items: center;
-          gap: 1rem; padding: 1.2rem 1.4rem; border-radius: 12px;
+          gap: 1rem; padding: 1rem 1.2rem; border-radius: 12px;
           border: 1px solid ${t.tealBorder}; background: ${t.card};
           transition: all 0.25s; margin-bottom: 0.8rem; color: inherit;
         }
+        @media(min-width:500px){
+          .cert-link { padding: 1.2rem 1.4rem; }
+        }
         .cert-link:hover { border-color: ${accent}; transform: translateX(4px); box-shadow: 0 4px 20px ${accentDim}; }
+
+        /* Hero card — stacks on mobile */
+        .hero-inner {
+          display: flex;
+          flex-direction: column;
+          gap: 1.2rem;
+        }
+        @media(min-width:600px){
+          .hero-inner {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+          }
+        }
+
+        .income-box {
+          background: ${accentDim};
+          border: 1px solid ${accentBorder};
+          border-radius: 12px;
+          padding: 1rem 1.3rem;
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+        }
+        @media(min-width:600px){
+          .income-box {
+            flex-direction: column;
+            text-align: center;
+            padding: 1rem 1.5rem;
+            flex-shrink: 0;
+          }
+        }
 
         .fade-0 { animation: fadeSlideUp 0.6s ease both; }
         .fade-1 { animation: fadeSlideUp 0.6s ease 0.1s both; }
@@ -218,7 +302,7 @@ export default function Specialist() {
           Loading...
         </div>
       ) : specialist && (
-        <main style={{ position: 'relative', zIndex: 1, padding: '6rem 2rem 4rem', maxWidth: 1000, margin: '0 auto' }}>
+        <main style={{ position: 'relative', zIndex: 1, padding: '6rem 1rem 4rem', maxWidth: 1000, margin: '0 auto' }}>
 
           {/* Back button */}
           <button
@@ -232,31 +316,33 @@ export default function Specialist() {
           </button>
 
           {/* Hero card */}
-          <div className={loaded ? 'fade-1' : ''} style={{ background: t.card, border: `1px solid ${accentBorder}`, borderRadius: 20, padding: '2rem', marginBottom: '2rem', position: 'relative', overflow: 'hidden', backdropFilter: 'blur(10px)' }}>
+          <div className={loaded ? 'fade-1' : ''} style={{ background: t.card, border: `1px solid ${accentBorder}`, borderRadius: 20, padding: '1.5rem', marginBottom: '2rem', position: 'relative', overflow: 'hidden', backdropFilter: 'blur(10px)' }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${accent}, transparent)` }} />
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1.5rem' }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: 50, padding: '0.3rem 1rem', fontSize: '0.75rem', color: accent, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1rem' }}>
-                  <img src={isBlue ? BlueTeamImg : RedTeamImg} alt={isBlue ? 'Blue Team' : 'Red Team'} style={{ width:38, height:38, objectFit:'contain' }} />
+            <div className="hero-inner">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: 50, padding: '0.3rem 1rem', fontSize: '0.75rem', color: accent, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                  <img src={isBlue ? BlueTeamImg : RedTeamImg} alt={isBlue ? 'Blue Team' : 'Red Team'} style={{ width: 30, height: 30, objectFit: 'contain' }} />
                   {specialist.team_name}
                 </div>
 
-                <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.5rem,4vw,2.5rem)', fontWeight: 900, color: t.text, marginBottom: '1rem', lineHeight: 1.1 }}>
+                <h1 style={{ fontFamily: "'Orbitron',monospace", fontSize: 'clamp(1.3rem,4vw,2.5rem)', fontWeight: 900, color: t.text, marginBottom: '1rem', lineHeight: 1.1 }}>
                   {specialist.name}<span style={{ color: accent }}>.</span>
                 </h1>
 
-                <p style={{ fontSize: '1rem', color: t.textDim, lineHeight: 1.7, maxWidth: 600 }}>
+                <p style={{ fontSize: '0.95rem', color: t.textDim, lineHeight: 1.7, maxWidth: 600 }}>
                   {specialist.description}
                 </p>
               </div>
 
               {specialist.avg_income && (
-                <div style={{ background: accentDim, border: `1px solid ${accentBorder}`, borderRadius: 12, padding: '1rem 1.5rem', textAlign: 'center', flexShrink: 0 }}>
-                  <div style={{ fontSize: '0.7rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Avg Income</div>
-                  <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.95rem', fontWeight: 700, color: accent, display:'flex', alignItems:'center', gap:'0.4rem' }}>
-                    <img src={MoneyImg} alt="Income" style={{ width:43, height:43, objectFit:'contain' }} />
-                    {specialist.avg_income}
+                <div className="income-box">
+                  <img src={MoneyImg} alt="Income" style={{ width: 36, height: 36, objectFit: 'contain', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: '0.7rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.3rem' }}>Avg Income</div>
+                    <div style={{ fontFamily: "'Orbitron',monospace", fontSize: '0.9rem', fontWeight: 700, color: accent }}>
+                      {specialist.avg_income}
+                    </div>
                   </div>
                 </div>
               )}
@@ -268,7 +354,7 @@ export default function Specialist() {
             <div style={{ fontSize: '0.75rem', color: t.textDim, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '0.8rem', fontFamily: "'Orbitron',monospace" }}>
               Learning Path
             </div>
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <div className="level-scroll">
               {levels.map((level, i) => (
                 <button
                   key={level.id}
@@ -284,7 +370,7 @@ export default function Specialist() {
           </div>
 
           {/* Tab bar */}
-          <div className={loaded ? 'fade-3' : ''} style={{ display: 'flex', gap: '0.5rem', borderBottom: `1px solid ${t.tealBorder}`, marginBottom: '1.5rem' }}>
+          <div className={`tab-bar ${loaded ? 'fade-3' : ''}`}>
             {[
               { key: 'projects', label: 'Projects', icon: '📁' },
               { key: 'certificates', label: 'Certificates', icon: '🏆' },
@@ -325,16 +411,11 @@ export default function Specialist() {
                       const hasDesc = descLines.length > 0
 
                       return (
-                        <div
-                          key={i}
-                          className={`proj-card ${isOpen ? 'expanded' : ''}`}
-                          style={{ animationDelay: `${i * 0.05}s` }}
-                        >
-                          {/* ── Header row (click to expand) ── */}
-                          <div
-                            className={`proj-row ${hasDesc ? 'clickable' : ''}`}
-                            onClick={() => hasDesc && toggleProject(i)}
-                          >
+                        <div key={i} className={`proj-card ${isOpen ? 'expanded' : ''}`} style={{ animationDelay: `${i * 0.05}s` }}>
+
+                          {/* ── Header row ── */}
+                          <div className={`proj-row ${hasDesc ? 'clickable' : ''}`} onClick={() => hasDesc && toggleProject(i)}>
+
                             {/* Level icon */}
                             <div style={{ width: 36, height: 36, borderRadius: 8, background: `${levelColors[activeLevel]}20`, border: `1px solid ${levelColors[activeLevel]}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                               {levelIcons[activeLevel]}
@@ -352,26 +433,19 @@ export default function Specialist() {
                               )}
                             </div>
 
-                            {/* Right controls */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem', flexShrink: 0 }}>
-
-                              {/* ── Start Exercise button — only shown if URL exists ── */}
+                            {/* Right controls — wrap below on mobile */}
+                            <div className="proj-controls" onClick={e => e.stopPropagation()}>
                               {p.url && (
-                                <a
-                                  href={p.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="exercise-btn"
-                                  onClick={e => e.stopPropagation()}
-                                >
+                                <a href={p.url} target="_blank" rel="noreferrer" className="exercise-btn">
                                   <span className="btn-icon">▶</span>
                                   Start Exercise
                                 </a>
                               )}
-
-                              {/* Expand/collapse arrow */}
                               {hasDesc && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: isOpen ? t.teal : t.textDim, fontSize: '0.8rem', fontFamily: "'Rajdhani',sans-serif", fontWeight: 600, transition: 'color 0.2s', userSelect: 'none' }}>
+                                <div
+                                  onClick={() => toggleProject(i)}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: isOpen ? t.teal : t.textDim, fontSize: '0.8rem', fontFamily: "'Rajdhani',sans-serif", fontWeight: 600, transition: 'color 0.2s', userSelect: 'none', cursor: 'pointer' }}
+                                >
                                   <span>{isOpen ? 'Hide' : 'Details'}</span>
                                   <span className={`proj-arrow ${isOpen ? 'open' : ''}`} style={{ color: isOpen ? t.teal : t.textDim }}>▼</span>
                                 </div>
@@ -382,12 +456,10 @@ export default function Specialist() {
                           {/* ── Collapsible description ── */}
                           {hasDesc && isOpen && (
                             <div className="desc-open">
-                              <div style={{ height: 1, background: t.tealBorder, margin: '0 1.4rem' }} />
-                              <div style={{ padding: '1.1rem 1.4rem 1.4rem' }}>
+                              <div style={{ height: 1, background: t.tealBorder, margin: '0 1.1rem' }} />
+                              <div style={{ padding: '1rem 1.1rem 1.2rem' }}>
                                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
                                   {descLines.map((line, li) => {
-
-                                    // **Bold header**
                                     if (isHeader(line)) {
                                       return (
                                         <li key={li} style={{ fontWeight: 700, color: t.teal, fontSize: '0.82rem', letterSpacing: '1px', textTransform: 'uppercase', marginTop: li > 0 ? '0.4rem' : 0 }}>
@@ -395,8 +467,6 @@ export default function Specialist() {
                                         </li>
                                       )
                                     }
-
-                                    // 1. Numbered step
                                     const numMatch = line.match(/^(\d+)\.\s*(.+)/)
                                     if (numMatch) {
                                       return (
@@ -408,8 +478,6 @@ export default function Specialist() {
                                         </li>
                                       )
                                     }
-
-                                    // › Plain bullet
                                     return (
                                       <li key={li} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', fontSize: '0.88rem', lineHeight: 1.65 }}>
                                         <span style={{ color: t.teal, fontSize: '1rem', marginTop: '0.05rem', flexShrink: 0, lineHeight: 1.4 }}>›</span>
@@ -442,11 +510,11 @@ export default function Specialist() {
                         <div style={{ width: 36, height: 36, borderRadius: 8, background: accentDim, border: `1px solid ${accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                           🏆
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{c.name}</div>
                           {c.provider && <div style={{ fontSize: '0.82rem', color: t.textDim }}>{c.provider}</div>}
                         </div>
-                        <div style={{ color: accent, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
+                        <div style={{ color: accent, fontSize: '0.85rem', opacity: 0.7, flexShrink: 0 }}>↗</div>
                       </a>
                     ))}
                   </div>
@@ -467,11 +535,11 @@ export default function Specialist() {
                         <div style={{ width: 36, height: 36, borderRadius: 8, background: t.tealDim, border: `1px solid ${t.tealBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                           {r.type === 'video' ? '🎥' : r.type === 'course' ? '🎓' : r.type === 'tool' ? '🛠️' : '📄'}
                         </div>
-                        <div style={{ flex: 1 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: '1rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem' }}>{r.title}</div>
                           <div style={{ fontSize: '0.78rem', color: t.textDim, textTransform: 'uppercase', letterSpacing: '1px' }}>{r.type}</div>
                         </div>
-                        <div style={{ color: t.teal, fontSize: '0.85rem', opacity: 0.7 }}>↗</div>
+                        <div style={{ color: t.teal, fontSize: '0.85rem', opacity: 0.7, flexShrink: 0 }}>↗</div>
                       </a>
                     ))}
                   </div>
