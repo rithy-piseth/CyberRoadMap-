@@ -258,7 +258,7 @@ export default function Landing() {
 
       {/* ── FOOTER ── */}
       <footer style={{ position: 'relative', zIndex: 1, textAlign: 'center', padding: '2rem 1rem', borderTop: `1px solid ${t.tealBorder}`, color: t.textDim, fontSize: '0.85rem', letterSpacing: '0.5px', transition: 'all 0.3s' }}>
-        Built for cybersecurity learners — <span style={{ color: t.teal }}>CyberRoadMap</span> © 2025
+        Built for cybersecurity learners — <span style={{ color: t.teal }}>CyberRoadMap</span> © 2026
       </footer>
     </div>
   )
